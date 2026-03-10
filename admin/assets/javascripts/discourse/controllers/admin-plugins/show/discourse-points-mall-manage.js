@@ -15,6 +15,7 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   @service toasts;
   @tracked adminOrderTypeFilter = "all";
   @tracked adminOrderStatusFilter = "all";
+  @tracked orderEditVersion = 0;
 
   productPayload(product) {
     return {
@@ -70,6 +71,9 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   }
 
   isOrderDirty(order) {
+    // Force recomputation after local edit handlers run, even when EmberObject
+    // property tracking behaves inconsistently in template method calls.
+    this.orderEditVersion;
     return (
       (order?.status || "") !== (order?._original_status || "") ||
       (order?.notes || "") !== (order?._original_notes || "")
@@ -188,11 +192,13 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   @action
   setOrderStatus(order, event) {
     set(order, "status", event?.target?.value || "pending");
+    this.orderEditVersion += 1;
   }
 
   @action
   setOrderNotes(order, event) {
     set(order, "notes", event?.target?.value || "");
+    this.orderEditVersion += 1;
   }
 
   @action
@@ -219,6 +225,7 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
       set(order, "notes", order.notes || "");
       set(order, "_original_status", order.status || "pending");
       set(order, "_original_notes", order.notes || "");
+      this.orderEditVersion += 1;
       this.refreshDashboardStats();
       this.success();
     } catch (error) {
@@ -230,6 +237,7 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   cancelOrderEdit(order) {
     set(order, "status", order._original_status || "pending");
     set(order, "notes", order._original_notes || "");
+    this.orderEditVersion += 1;
   }
 
   @action

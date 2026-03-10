@@ -422,6 +422,7 @@
                   @value={{order.notes}}
                   class="points-mall-admin-order-notes-input"
                   {{on "input" (fn this.setOrderNotes order)}}
+                  {{on "change" (fn this.setOrderNotes order)}}
                 />
               </div>
 
