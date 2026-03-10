@@ -1810,7 +1810,7 @@
 
   .points-mall-admin-order-edit {
     display: grid;
-    grid-template-columns: 220px minmax(0, 1fr) minmax(180px, 1fr) auto;
+    grid-template-columns: 220px minmax(0, 1fr) minmax(180px, 1fr);
     gap: 10px;
     align-items: start;
   }
@@ -1853,12 +1853,15 @@
     }
 
     &.--action {
+      grid-column: 1 / -1;
       align-items: flex-end;
 
       .points-mall-admin-order-actions {
         display: flex;
         align-items: center;
         gap: 8px;
+        justify-content: flex-end;
+        width: 100%;
       }
 
       .btn {

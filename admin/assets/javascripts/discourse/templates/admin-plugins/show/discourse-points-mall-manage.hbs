@@ -433,18 +433,20 @@
 
               <div class="points-mall-admin-order-field --action">
                 <div class="points-mall-admin-order-actions">
-                  <DButton
-                    @label="points_mall.admin.actions.save"
-                    @action={{fn this.saveOrder order}}
-                    @disabled={{not (this.isOrderDirty order)}}
-                    class="btn-primary points-mall-admin-order-save-btn"
-                  />
-                  <DButton
-                    @label="points_mall.admin.actions.cancel"
-                    @action={{fn this.cancelOrderEdit order}}
-                    @disabled={{not (this.isOrderDirty order)}}
-                    class="btn-default points-mall-admin-order-cancel-btn"
-                  />
+                  <button
+                    type="button"
+                    class="btn btn-primary points-mall-admin-order-save-btn"
+                    {{on "click" (fn this.saveOrder order)}}
+                  >
+                    {{i18n "points_mall.admin.actions.save"}}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-default points-mall-admin-order-cancel-btn"
+                    {{on "click" (fn this.cancelOrderEdit order)}}
+                  >
+                    {{i18n "points_mall.admin.actions.cancel"}}
+                  </button>
                 </div>
               </div>
             </div>
