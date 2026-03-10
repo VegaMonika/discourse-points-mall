@@ -1,0 +1,12 @@
+plugins:
+  points_mall_enabled:
+    default: true
+    client: true
+  points_mall_checkin_points:
+    default: 10
+    min: 1
+    max: 1000
+  points_mall_checkin_streak_bonus:
+    default: 5
+    min: 0
+    max: 1000

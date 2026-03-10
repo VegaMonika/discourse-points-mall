@@ -1,0 +1,41 @@
+en:
+  site_settings:
+    points_mall_enabled: "Enable Points Mall plugin"
+    points_mall_checkin_points: "Points awarded for daily check-in"
+    points_mall_checkin_streak_bonus: "Bonus points for consecutive check-ins"
+  points_mall:
+    levels:
+      lv1: "Tier 1 · Candy Bean"
+      lv2: "Tier 2 · Mochi Ball"
+      lv3: "Tier 3 · Popping Candy"
+      lv4: "Tier 4 · Sugar Crown"
+    checkin:
+      requirements_progress: "%{met}/%{total} promotion requirements completed"
+      tl4_manual_requirement: "TL4 (Leader) is manually granted by staff"
+      max_level: "Max level reached"
+      trust_level_fallback: "Trust Level TL%{level}"
+    admin:
+      title: "Points Mall"
+      errors:
+        product_has_orders: "This product already has orders and cannot be deleted. Disable it instead."
+        makeup_card_protected: "Makeup card is a system product and cannot be deleted."
+    errors:
+      insufficient_points: "Insufficient points"
+      product_unavailable: "Product is not available"
+      shipping_info_required: "Shipping information is required for physical products"
+      invalid_address: "Invalid shipping address"
+      address_limit_reached: "You can create up to %{count} shipping addresses"
+      already_checked_in: "Already checked in today"
+      invalid_makeup_date: "Invalid makeup date"
+      makeup_unavailable: "Makeup feature is unavailable"
+      makeup_current_month_only: "You can only make up check-ins for the current month"
+      makeup_past_days_only: "You can only make up past days"
+      no_makeup_card: "No makeup card available. Please purchase one in the shop first"
+      date_already_checked_in: "This date has already been checked in"
+      makeup_failed: "Failed to make up check-in. Please try again later"
+      makeup_purchase_limit_reached: "Monthly makeup card purchase limit reached"
+      unauthorized: "You are not authorized to perform this action"
+      points_update_failed: "Failed to update points, please try again later"
+      order_create_failed: "Failed to create order"
+    points:
+      unknown_description: "Points change"

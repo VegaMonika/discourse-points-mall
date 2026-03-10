@@ -1,0 +1,41 @@
+zh_CN:
+  site_settings:
+    points_mall_enabled: "启用积分商城插件"
+    points_mall_checkin_points: "每日签到获得的积分"
+    points_mall_checkin_streak_bonus: "连续签到奖励积分"
+  points_mall:
+    levels:
+      lv1: "初阶·小糖豆"
+      lv2: "二阶·糯团团"
+      lv3: "三阶·跳跳糖"
+      lv4: "四阶·蜜糖王"
+    checkin:
+      requirements_progress: "已满足 %{met}/%{total} 项升级条件"
+      tl4_manual_requirement: "TL4（领袖）需由管理员手动授予"
+      max_level: "已达最高等级"
+      trust_level_fallback: "信任等级 TL%{level}"
+    admin:
+      title: "积分商城"
+      errors:
+        product_has_orders: "该商品已有订单，无法删除，请先禁用。"
+        makeup_card_protected: "补签卡是系统商品，不能删除。"
+    errors:
+      insufficient_points: "积分不足"
+      product_unavailable: "商品不可用"
+      shipping_info_required: "实物商品必须填写收货信息"
+      invalid_address: "收货地址无效"
+      address_limit_reached: "最多可创建 %{count} 个收货地址"
+      already_checked_in: "今天已经签到过了"
+      invalid_makeup_date: "补签日期无效"
+      makeup_unavailable: "补签功能暂不可用"
+      makeup_current_month_only: "仅支持补签本月漏签日期"
+      makeup_past_days_only: "只能补签今天之前的日期"
+      no_makeup_card: "暂无可用补签卡，请先在商店购买"
+      date_already_checked_in: "该日期已签到，无需补签"
+      makeup_failed: "补签失败，请稍后重试"
+      makeup_purchase_limit_reached: "本月补签卡已购满 3 次"
+      unauthorized: "您无权执行此操作"
+      points_update_failed: "积分变更失败，请稍后重试"
+      order_create_failed: "订单创建失败"
+    points:
+      unknown_description: "积分变动"

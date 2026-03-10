@@ -1,0 +1,55 @@
+<div class="points-mall-checkin">
+  <div class="checkin-summary">
+    <h2>{{i18n "points_mall.checkin.title"}}</h2>
+
+    <div class="checkin-stats">
+      <div class="stat-item">
+        <span class="stat-label">{{i18n "points_mall.checkin.streak"}}</span>
+        <span class="stat-value">{{this.model.summary.current_streak}}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">{{i18n "points_mall.checkin.total_checkins"}}</span>
+        <span class="stat-value">{{this.model.summary.total_checkins}}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">{{i18n "points_mall.checkin.total_points"}}</span>
+        <span class="stat-value">{{this.model.summary.total_points}}</span>
+      </div>
+    </div>
+
+    {{#unless this.model.summary.checked_in_today}}
+      <DButton
+        @action={{this.checkin}}
+        @label="points_mall.checkin.button"
+        @icon="calendar-check"
+        class="btn-primary checkin-button"
+      />
+    {{else}}
+      <div class="already-checked-in">
+        {{i18n "points_mall.checkin.already_checked"}}
+      </div>
+    {{/unless}}
+  </div>
+
+  <div class="checkin-history">
+    <h3>{{i18n "points_mall.checkin.history"}}</h3>
+    <table class="checkin-table">
+      <thead>
+        <tr>
+          <th>{{i18n "points_mall.checkin.date"}}</th>
+          <th>{{i18n "points_mall.checkin.points"}}</th>
+          <th>{{i18n "points_mall.checkin.streak"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each this.model.checkins as |checkin|}}
+          <tr>
+            <td>{{format-date checkin.checkin_date}}</td>
+            <td>{{checkin.points_earned}}</td>
+            <td>{{checkin.streak_days}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>

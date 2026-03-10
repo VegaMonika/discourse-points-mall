@@ -1,0 +1,757 @@
+<div class="points-mall-container">
+  <div class="points-mall-header-card">
+    <div class="points-mall-brand">
+      <div class="points-mall-brand-icon">{{d-icon "gift"}}</div>
+      <div>
+        <h1>{{i18n "points_mall.title"}}</h1>
+        <p>{{i18n "points_mall.subtitle"}}</p>
+      </div>
+    </div>
+
+    <div class="points-balance-card">
+      <span>{{i18n "points_mall.balance"}}</span>
+      <strong>{{this.currentUser.points_balance}}</strong>
+    </div>
+  </div>
+
+  <div class="points-mall-nav-shell">
+    <div class="points-mall-nav">
+      {{#each this.tabs as |tab|}}
+        <button
+          type="button"
+          class="points-mall-nav-item {{if (eq this.activeTab tab.name) 'active'}}"
+          {{on "click" (fn this.switchTab tab.name)}}
+        >
+          {{d-icon tab.icon}}
+          <span>{{i18n (concat "points_mall.nav." tab.name)}}</span>
+        </button>
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="points-mall-content">
+    {{#if (eq this.activeTab "checkin")}}
+      <div class="points-mall-checkin">
+        <div class="checkin-overview-grid">
+          <article class="checkin-summary-card">
+            <div class="checkin-summary-head">
+              <h2>{{i18n "points_mall.checkin.title"}}</h2>
+
+              {{#unless this.checkinSummary.checked_in_today}}
+                <DButton
+                  @action={{this.checkin}}
+                  @label="points_mall.checkin.button"
+                  @icon="calendar-check"
+                  class="btn-primary checkin-button"
+                />
+              {{else}}
+                <div class="already-checked-in">
+                  {{i18n "points_mall.checkin.already_checked"}}
+                </div>
+              {{/unless}}
+            </div>
+
+            <div class="checkin-stats-grid">
+              <article class="checkin-stat-item">
+                <span class="stat-label">{{i18n "points_mall.checkin.current_streak_label"}}</span>
+                <strong class="stat-value">{{this.checkinSummary.current_streak}}</strong>
+              </article>
+              <article class="checkin-stat-item">
+                <span class="stat-label">{{i18n "points_mall.checkin.month_checkins_label"}}</span>
+                <strong class="stat-value">{{this.checkinSummary.current_month_checkins}}</strong>
+              </article>
+              <article class="checkin-stat-item">
+                <span class="stat-label">{{i18n "points_mall.checkin.my_rank_label"}}</span>
+                <strong class="stat-value">
+                  {{#if this.checkinSummary.my_rank}}
+                    {{this.checkinSummary.my_rank}}
+                    {{i18n "points_mall.checkin.rank_suffix"}}
+                  {{else}}
+                    -
+                  {{/if}}
+                </strong>
+              </article>
+              <article class="checkin-stat-item">
+                <span class="stat-label">{{i18n "points_mall.checkin.current_level_label"}}</span>
+                <strong class="stat-value">{{this.levelProgress.current_name}}</strong>
+              </article>
+            </div>
+          </article>
+
+          <article class="checkin-level-card">
+            <div class="checkin-level-head">
+              <h3>{{i18n "points_mall.checkin.progress_title"}}</h3>
+              <span class="level-badge">{{this.levelProgress.current_name}}</span>
+            </div>
+            <p class="checkin-level-subtitle">
+              {{i18n "points_mall.checkin.progress_subtitle" level=this.levelProgress.current_name}}
+            </p>
+            <div class="checkin-level-progress">
+              <div
+                class="checkin-level-progress-bar"
+                style={{concat "width: " this.levelProgress.progress_percent "%"}}
+              ></div>
+            </div>
+            <p class="checkin-level-next">
+              {{#if this.levelProgress.next_name}}
+                {{i18n "points_mall.checkin.next_level_label" next=this.levelProgress.next_name}}
+                ·
+                {{this.levelProgress.requirement_text}}
+              {{else}}
+                {{i18n "points_mall.checkin.max_level"}}
+              {{/if}}
+            </p>
+          </article>
+        </div>
+
+        <div class="checkin-main-grid">
+          <article class="checkin-calendar-card">
+            <div class="checkin-calendar-head">
+              <h3>{{i18n "points_mall.checkin.calendar_title"}}</h3>
+              <div class="checkin-calendar-head-actions">
+                <span>{{this.checkinSummary.month_progress_percent}}%</span>
+                <button
+                  type="button"
+                  class="btn btn-small checkin-buy-makeup-btn {{if this.canBuyMakeupCard 'btn-primary'}}"
+                  {{on "click" this.buyMakeupCard}}
+                  disabled={{not this.canBuyMakeupCard}}
+                >
+                  {{i18n this.makeupBuyButtonLabel}}
+                </button>
+              </div>
+            </div>
+            <p class="checkin-calendar-tip">
+              {{i18n
+                "points_mall.checkin.calendar_tip"
+                purchased=this.makeupCardStatus.purchased_count
+                used=this.makeupCardStatus.used_count
+                remain=this.makeupCardStatus.available_count}}
+            </p>
+
+            <div class="checkin-weekday-row">
+              {{#each this.calendarWeekdayKeys as |weekday|}}
+                <span>{{i18n (concat "points_mall.checkin.weekdays." weekday)}}</span>
+              {{/each}}
+            </div>
+
+            <div class="checkin-calendar-grid">
+              {{#each this.monthCalendarCells as |day|}}
+                {{#if day.placeholder}}
+                  <div class="checkin-day-cell placeholder"></div>
+                {{else}}
+                  <div class="checkin-day-cell status-{{day.status}}">
+                    <strong>{{day.day}}</strong>
+                    <span>{{i18n (concat "points_mall.checkin.calendar_status." day.status)}}</span>
+                    {{#if day.can_makeup}}
+                      <button
+                        type="button"
+                        class="btn btn-small btn-primary checkin-makeup-btn"
+                        {{on "click" (fn this.makeUpCheckin day)}}
+                      >
+                        {{i18n "points_mall.checkin.makeup_action"}}
+                      </button>
+                    {{/if}}
+                  </div>
+                {{/if}}
+              {{/each}}
+            </div>
+          </article>
+
+          <aside class="checkin-ranking-card">
+            <div class="checkin-ranking-head">
+              <h3>{{d-icon "trophy"}} {{i18n "points_mall.checkin.ranking_title"}}</h3>
+              <span>{{i18n "points_mall.checkin.ranking_my_points" points=this.checkinSummary.my_score}}</span>
+            </div>
+
+            {{#if this.hasRankingUsers}}
+              <div class="checkin-ranking-list">
+                {{#each this.rankingUsers as |row|}}
+                  <article class="checkin-ranking-item">
+                    <span class="rank-order">{{row.rank}}</span>
+                    <div class="rank-user">
+                      {{#if (this.avatarUrl row.avatar_template 56)}}
+                        <img src={{this.avatarUrl row.avatar_template 56}} alt={{row.username}} />
+                      {{else}}
+                        <div class="rank-avatar-fallback">{{d-icon "user"}}</div>
+                      {{/if}}
+                      <div>
+                        <strong>{{row.username}}</strong>
+                        <small>{{row.level_name}}</small>
+                      </div>
+                    </div>
+                    <span class="rank-points">{{row.points}}</span>
+                  </article>
+                {{/each}}
+              </div>
+            {{else}}
+              <p class="checkin-ranking-empty">{{i18n "points_mall.checkin.ranking_empty"}}</p>
+            {{/if}}
+          </aside>
+        </div>
+
+        <div class="checkin-history">
+          <h3>{{i18n "points_mall.checkin.history"}}</h3>
+
+          <div class="checkin-history-table-wrap">
+            <table class="checkin-table">
+              <thead>
+                <tr>
+                  <th>{{i18n "points_mall.checkin.date"}}</th>
+                  <th>{{i18n "points_mall.checkin.points"}}</th>
+                  <th>{{i18n "points_mall.checkin.current_streak_label"}}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each this.model.checkins as |checkin|}}
+                  <tr>
+                    <td>{{format-date checkin.checkin_date}}</td>
+                    <td>{{checkin.points_earned}}</td>
+                    <td>{{checkin.streak_days}}</td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    {{/if}}
+
+    {{#if (eq this.activeTab "shop")}}
+      <div class="points-mall-shop">
+        <h2>{{i18n "points_mall.shop.title"}}</h2>
+        {{#if this.model.products.length}}
+          <div class="products-grid">
+            {{#each this.model.products as |product|}}
+              <div class="product-card">
+                {{#if product.image_url}}
+                  <div class="product-image">
+                    <img src={{product.image_url}} alt={{product.name}} />
+                  </div>
+                {{/if}}
+                <div class="product-info">
+                  <h3>{{product.name}}</h3>
+                  <p>{{product.description}}</p>
+                  <div class="product-meta">
+                    <span class="product-cost">
+                      {{i18n "points_mall.shop.cost" points=product.points_cost}}
+                    </span>
+                    <span class="product-stock">
+                      {{#if (eq product.stock -1)}}
+                        {{i18n "points_mall.shop.unlimited"}}
+                      {{else if (gt product.stock 0)}}
+                        {{i18n "points_mall.shop.stock" count=product.stock}}
+                      {{else}}
+                        {{i18n "points_mall.shop.out_of_stock"}}
+                      {{/if}}
+                    </span>
+                  </div>
+                  <div class="product-type-badge">
+                    {{i18n (concat "points_mall.shop.type." product.product_type)}}
+                  </div>
+
+                  {{#if product.is_makeup_card}}
+                    <div class="product-makeup-meta">
+                      <p>
+                        {{i18n
+                          "points_mall.shop.makeup.monthly_status"
+                          purchased=product.makeup_card.purchased_count
+                          used=product.makeup_card.used_count
+                          remain=product.makeup_card.available_count}}
+                      </p>
+                      <p>{{i18n "points_mall.shop.makeup.tiered_price"}}</p>
+                    </div>
+                  {{/if}}
+                </div>
+                <div class="product-action">
+                  {{#if product.is_makeup_card}}
+                    {{#if product.purchaseable}}
+                      <DButton
+                        @action={{fn this.buyProduct product.id}}
+                        @label="points_mall.shop.buy"
+                        @icon="shopping-cart"
+                        class="btn-primary"
+                      />
+                    {{else if (eq product.purchase_disabled_reason "disabled")}}
+                      <DButton
+                        @label="points_mall.shop.makeup.off_shelf"
+                        @disabled={{true}}
+                        class="btn-disabled"
+                      />
+                    {{else}}
+                      <DButton
+                        @label="points_mall.shop.makeup.limit_reached"
+                        @disabled={{true}}
+                        class="btn-disabled"
+                      />
+                    {{/if}}
+                  {{else if (or (eq product.stock -1) (gt product.stock 0))}}
+                    <DButton
+                      @action={{fn this.buyProduct product.id}}
+                      @label="points_mall.shop.buy"
+                      @icon="shopping-cart"
+                      class="btn-primary"
+                    />
+                  {{else}}
+                    <DButton
+                      @label="points_mall.shop.out_of_stock"
+                      @disabled={{true}}
+                      class="btn-disabled"
+                    />
+                  {{/if}}
+                </div>
+              </div>
+            {{/each}}
+          </div>
+        {{else}}
+          <div class="empty-state shop-empty">
+            <h3>{{i18n "points_mall.shop.empty_title"}}</h3>
+            <p>{{i18n "points_mall.shop.empty_tip"}}</p>
+          </div>
+        {{/if}}
+      </div>
+    {{/if}}
+
+    {{#if (eq this.activeTab "orders")}}
+      <div class="points-mall-orders">
+        <div class="orders-header">
+          <div class="orders-title-wrap">
+            <div class="orders-title-icon">{{d-icon "clock-rotate-left"}}</div>
+            <div>
+              <h2>{{i18n "points_mall.orders.title"}}</h2>
+              <p>{{i18n "points_mall.orders.subtitle"}}</p>
+            </div>
+          </div>
+
+          <div class="orders-summary">
+            <article class="orders-summary-item">
+              <span>{{i18n "points_mall.orders.summary.all"}}</span>
+              <strong>{{this.orderSummary.all}}</strong>
+            </article>
+            <article class="orders-summary-item">
+              <span>{{i18n "points_mall.orders.summary.physical"}}</span>
+              <strong>{{this.orderSummary.physical}}</strong>
+            </article>
+            <article class="orders-summary-item">
+              <span>{{i18n "points_mall.orders.summary.virtual"}}</span>
+              <strong>{{this.orderSummary.virtual}}</strong>
+            </article>
+          </div>
+        </div>
+
+        <div class="orders-hint-banner">
+          {{d-icon "circle-info"}}
+          <span>{{i18n "points_mall.orders.tip_banner"}}</span>
+        </div>
+
+        <div class="orders-type-filters">
+          {{#each this.orderTypeFilters as |filter|}}
+            <button
+              type="button"
+              class="orders-type-filter {{if (eq this.orderTypeFilter filter) 'active'}}"
+              {{on "click" (fn this.setOrderTypeFilter filter)}}
+            >
+              {{i18n (concat "points_mall.orders.filters." filter)}}
+            </button>
+          {{/each}}
+        </div>
+
+        {{#if this.hasFilteredOrders}}
+          <div class="orders-list">
+            {{#each this.filteredOrders as |order|}}
+              <div class="order-card">
+                <div class="order-product-thumb">
+                  {{#if order.product.image_url}}
+                    <img src={{order.product.image_url}} alt={{order.product.name}} />
+                  {{else if (eq (this.orderProductType order) "physical")}}
+                    {{d-icon "box"}}
+                  {{else}}
+                    {{d-icon "bolt"}}
+                  {{/if}}
+                </div>
+
+                <div class="order-info">
+                  <div class="order-title-row">
+                    <h3>{{order.product.name}}</h3>
+                    <span class="order-product-type type-{{this.orderProductType order}}">
+                      {{i18n (concat "points_mall.orders.types." (this.orderProductType order))}}
+                    </span>
+                  </div>
+
+                  <div class="order-meta">
+                    <span class="order-cost">
+                      {{i18n "points_mall.shop.cost" points=order.points_spent}}
+                    </span>
+                    <span class="order-status status-{{order.status}}">
+                      {{i18n (concat "points_mall.orders.status." order.status)}}
+                    </span>
+                    <span class="order-date">{{format-date order.created_at}}</span>
+                  </div>
+
+                  {{#if order.shipping_info}}
+                    <div class="order-shipping">
+                      <strong>{{i18n "points_mall.orders.shipping_info"}}:</strong>
+                      <p>{{order.shipping_info}}</p>
+                    </div>
+                  {{/if}}
+
+                  {{#if order.notes}}
+                    <div class="order-notes">
+                      <strong>{{i18n "points_mall.orders.notes"}}:</strong>
+                      <p>{{order.notes}}</p>
+                    </div>
+                  {{/if}}
+                </div>
+              </div>
+            {{/each}}
+          </div>
+        {{else}}
+          <div class="empty-state orders-empty">
+            <div class="orders-empty-icon">{{d-icon "box"}}</div>
+            <h3>{{i18n "points_mall.orders.empty"}}</h3>
+            <p>{{i18n "points_mall.orders.empty_hint"}}</p>
+            <DButton
+              @icon="gift"
+              @label="points_mall.orders.go_shop"
+              @action={{this.goToShop}}
+              class="btn-primary"
+            />
+          </div>
+        {{/if}}
+
+        <div class="points-mall-addresses">
+          <div class="points-mall-addresses-header">
+            <h3>{{i18n "points_mall.addresses.title"}}</h3>
+            <button
+              type="button"
+              class="btn btn-primary btn-small"
+              {{on "click" this.openCreateAddressEditor}}
+              disabled={{if this.canCreateMoreAddresses false true}}
+            >
+              {{i18n "points_mall.addresses.new"}}
+            </button>
+          </div>
+
+          <p class="points-mall-addresses-limit">
+            {{i18n
+              "points_mall.addresses.limit_hint"
+              count=3
+              current=this.addresses.length}}
+          </p>
+
+          {{#if this.addresses.length}}
+            <div class="points-mall-address-list">
+              {{#each this.addresses as |address|}}
+                <div class="points-mall-address-card">
+                  <div class="points-mall-address-main">
+                    <div class="points-mall-address-top">
+                      <span class="points-mall-address-recipient">{{address.recipient_name}}</span>
+                      <span class="points-mall-address-phone">{{address.phone}}</span>
+                      {{#if address.is_default}}
+                        <span class="points-mall-address-default">
+                          {{i18n "points_mall.addresses.default_badge"}}
+                        </span>
+                      {{/if}}
+                    </div>
+                    <p class="points-mall-address-line">{{address.address_line}}</p>
+                  </div>
+                  <div class="points-mall-address-actions">
+                    {{#unless address.is_default}}
+                      <button
+                        type="button"
+                        class="btn btn-flat"
+                        {{on "click" (fn this.setDefaultAddress address.id)}}
+                      >
+                        {{i18n "points_mall.addresses.set_default"}}
+                      </button>
+                    {{/unless}}
+                    <button
+                      type="button"
+                      class="btn btn-flat"
+                      {{on "click" (fn this.editAddress address)}}
+                    >
+                      {{i18n "points_mall.addresses.edit"}}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-flat"
+                      {{on "click" (fn this.deleteAddress address.id)}}
+                    >
+                      {{i18n "points_mall.addresses.delete"}}
+                    </button>
+                  </div>
+                </div>
+              {{/each}}
+            </div>
+          {{else}}
+            <div class="points-mall-address-empty">
+              {{i18n "points_mall.addresses.empty"}}
+            </div>
+          {{/if}}
+
+          {{#if this.showAddressEditor}}
+            <div class="points-mall-address-editor">
+              <h4>
+                {{#if this.isEditingAddress}}
+                  {{i18n "points_mall.addresses.edit"}}
+                {{else}}
+                  {{i18n "points_mall.addresses.new"}}
+                {{/if}}
+              </h4>
+
+              <div class="points-mall-address-form-grid">
+                <div class="points-mall-field">
+                  <label>{{i18n "points_mall.addresses.recipient_name"}}</label>
+                  <Input
+                    @value={{this.addressEditorForm.recipient_name}}
+                    placeholder={{i18n "points_mall.addresses.recipient_placeholder"}}
+                    {{on "input" (fn this.updateAddressEditorField "recipient_name")}}
+                  />
+                </div>
+                <div class="points-mall-field">
+                  <label>{{i18n "points_mall.addresses.phone"}}</label>
+                  <Input
+                    @value={{this.addressEditorForm.phone}}
+                    placeholder={{i18n "points_mall.addresses.phone_placeholder"}}
+                    {{on "input" (fn this.updateAddressEditorField "phone")}}
+                  />
+                </div>
+                <div class="points-mall-field --full">
+                  <label>{{i18n "points_mall.addresses.address_line"}}</label>
+                  <Input
+                    @value={{this.addressEditorForm.address_line}}
+                    placeholder={{i18n "points_mall.addresses.address_placeholder"}}
+                    {{on "input" (fn this.updateAddressEditorField "address_line")}}
+                  />
+                </div>
+                <label class="points-mall-checkbox --full">
+                  <Input
+                    @type="checkbox"
+                    @checked={{this.addressEditorForm.is_default}}
+                    {{on "change" this.toggleAddressEditorDefault}}
+                  />
+                  <span>{{i18n "points_mall.addresses.set_as_default"}}</span>
+                </label>
+              </div>
+
+              <div class="points-mall-address-editor-actions">
+                <button type="button" class="btn" {{on "click" this.cancelAddressEditor}}>
+                  {{i18n "points_mall.checkout.cancel"}}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  {{on "click" this.saveAddressEditor}}
+                  disabled={{this.isSavingAddress}}
+                >
+                  {{#if this.isEditingAddress}}
+                    {{i18n "points_mall.addresses.update"}}
+                  {{else}}
+                    {{i18n "points_mall.addresses.save"}}
+                  {{/if}}
+                </button>
+              </div>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+    {{/if}}
+
+    {{#if (eq this.activeTab "ledger")}}
+      <div class="points-mall-ledger">
+        <div class="ledger-header">
+          <div class="ledger-title-wrap">
+            <div class="ledger-title-icon">{{d-icon "wallet"}}</div>
+            <div>
+              <h2>{{i18n "points_mall.points.title"}}</h2>
+              <p>{{i18n "points_mall.points.subtitle"}}</p>
+            </div>
+          </div>
+          <div class="ledger-balance-card">
+            <span>{{i18n "points_mall.points.current_points"}}</span>
+            <strong>{{this.currentUser.points_balance}}</strong>
+          </div>
+        </div>
+
+        <div class="ledger-summary-grid">
+          <article class="ledger-summary-card income">
+            <span>{{i18n "points_mall.points.summary.income"}}</span>
+            <strong>{{this.pointsSummary.income_count}}</strong>
+          </article>
+          <article class="ledger-summary-card expense">
+            <span>{{i18n "points_mall.points.summary.expense"}}</span>
+            <strong>{{this.pointsSummary.expense_count}}</strong>
+          </article>
+        </div>
+
+        <div class="ledger-filter-row">
+          {{#each this.pointsFilters as |filter|}}
+            <button
+              type="button"
+              class="ledger-filter-item {{if (eq this.pointsFilter filter) 'active'}}"
+              {{on "click" (fn this.setPointsFilter filter)}}
+            >
+              {{i18n (concat "points_mall.points.filters." filter)}}
+            </button>
+          {{/each}}
+        </div>
+
+        {{#if this.hasLedgerEvents}}
+          <div class="ledger-event-list">
+            {{#each this.filteredLedgerEvents as |event|}}
+              <article class="ledger-event-item">
+                <div class="ledger-event-main">
+                  <span class="ledger-event-mark {{event.direction}}">
+                    {{#if (eq event.direction "income")}}
+                      {{d-icon "plus"}}
+                    {{else}}
+                      {{d-icon "minus"}}
+                    {{/if}}
+                  </span>
+                  <div>
+                    <strong>{{event.description}}</strong>
+                    <p>{{format-date event.created_at}}</p>
+                  </div>
+                </div>
+                <strong class="ledger-event-points {{event.direction}}">
+                  {{#if (eq event.direction "income")}}+{{/if}}{{event.points}}
+                </strong>
+              </article>
+            {{/each}}
+          </div>
+        {{else}}
+          <div class="ledger-empty">
+            {{i18n "points_mall.points.empty"}}
+          </div>
+        {{/if}}
+      </div>
+    {{/if}}
+  </div>
+
+  {{#if this.purchaseModalOpen}}
+    <div class="points-mall-modal-backdrop" {{on "click" this.closePurchaseModal}}>
+      <div class="points-mall-modal" {{on "click" this.stopEvent}}>
+        <div class="points-mall-modal-header">
+          <h3>
+            {{i18n this.checkoutTitleKey product=this.checkoutProduct.name}}
+          </h3>
+        </div>
+
+        <div class="points-mall-modal-body">
+          {{#if (eq this.checkoutStep "virtual")}}
+            <p>
+              {{i18n "points_mall.checkout.virtual_message" product=this.checkoutProduct.name}}
+            </p>
+            <p class="points-mall-modal-tip">{{i18n "points_mall.checkout.virtual_tip"}}</p>
+          {{/if}}
+
+          {{#if (eq this.checkoutStep "physical-confirm")}}
+            <p class="points-mall-modal-tip">{{i18n "points_mall.checkout.use_default_address"}}</p>
+            {{#if this.selectedCheckoutAddress}}
+              <div class="points-mall-checkout-address-preview">
+                <p>
+                  <strong>{{this.selectedCheckoutAddress.recipient_name}}</strong>
+                  {{this.selectedCheckoutAddress.phone}}
+                </p>
+                <p>{{this.selectedCheckoutAddress.address_line}}</p>
+              </div>
+            {{/if}}
+          {{/if}}
+
+          {{#if (eq this.checkoutStep "physical-select")}}
+            <p class="points-mall-modal-tip">{{i18n "points_mall.checkout.choose_address"}}</p>
+            <div class="points-mall-checkout-address-list">
+              {{#each this.addresses as |address|}}
+                <label class="points-mall-checkout-address-item">
+                  <Input
+                    @type="radio"
+                    @name="checkout-address"
+                    @checked={{eq this.checkoutSelectedAddressId address.id}}
+                    {{on "change" (fn this.setCheckoutAddress address.id)}}
+                  />
+                  <span>
+                    <strong>{{address.recipient_name}}</strong>
+                    {{address.phone}}
+                    {{#if address.is_default}}
+                      <em>{{i18n "points_mall.addresses.default_badge"}}</em>
+                    {{/if}}
+                    <small>{{address.address_line}}</small>
+                  </span>
+                </label>
+              {{/each}}
+            </div>
+
+            <div class="points-mall-checkout-inline-actions">
+              <button
+                type="button"
+                class="btn"
+                {{on "click" this.useNewAddressInCheckout}}
+                disabled={{if this.canCreateMoreAddresses false true}}
+              >
+                {{i18n "points_mall.checkout.add_new_address"}}
+              </button>
+            </div>
+          {{/if}}
+
+          {{#if (eq this.checkoutStep "physical-form")}}
+            <div class="points-mall-address-form-grid">
+              <div class="points-mall-field --full">
+                <label>{{i18n "points_mall.addresses.recipient_name"}}</label>
+                <Input
+                  @value={{this.checkoutAddressForm.recipient_name}}
+                  placeholder={{i18n "points_mall.addresses.recipient_placeholder"}}
+                  {{on "input" (fn this.updateCheckoutAddressField "recipient_name")}}
+                />
+              </div>
+              <div class="points-mall-field --full">
+                <label>{{i18n "points_mall.addresses.phone"}}</label>
+                <Input
+                  @value={{this.checkoutAddressForm.phone}}
+                  placeholder={{i18n "points_mall.addresses.phone_placeholder"}}
+                  {{on "input" (fn this.updateCheckoutAddressField "phone")}}
+                />
+              </div>
+              <div class="points-mall-field --full">
+                <label>{{i18n "points_mall.addresses.address_line"}}</label>
+                <Input
+                  @value={{this.checkoutAddressForm.address_line}}
+                  placeholder={{i18n "points_mall.addresses.address_placeholder"}}
+                  {{on "input" (fn this.updateCheckoutAddressField "address_line")}}
+                />
+              </div>
+              <label class="points-mall-checkbox --full">
+                <Input
+                  @type="checkbox"
+                  @checked={{this.checkoutAddressForm.is_default}}
+                  {{on "change" this.toggleCheckoutAddressDefault}}
+                />
+                <span>{{i18n "points_mall.addresses.set_as_default"}}</span>
+              </label>
+            </div>
+
+            {{#if this.addresses.length}}
+              <div class="points-mall-checkout-inline-actions">
+                <button type="button" class="btn btn-flat" {{on "click" this.backToAddressSelect}}>
+                  {{i18n "points_mall.checkout.back_to_address_list"}}
+                </button>
+              </div>
+            {{/if}}
+          {{/if}}
+        </div>
+
+        <div class="points-mall-modal-footer">
+          <button type="button" class="btn" {{on "click" this.closePurchaseModal}}>
+            {{i18n "points_mall.checkout.cancel"}}
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            {{on "click" this.submitCheckout}}
+            disabled={{this.isSubmittingCheckout}}
+          >
+            {{i18n this.checkoutSubmitKey}}
+          </button>
+        </div>
+      </div>
+    </div>
+  {{/if}}
+</div>

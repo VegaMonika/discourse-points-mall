@@ -1,0 +1,302 @@
+.points-mall-container {
+  padding: 10px;
+
+  .points-mall-header-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    .points-mall-brand {
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.45em;
+    }
+
+    .points-balance-card {
+      width: 100%;
+      align-items: flex-start;
+    }
+  }
+
+  .points-mall-nav-shell {
+    padding: 8px;
+  }
+
+  .points-mall-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .points-mall-nav-item {
+      padding: 10px 8px;
+      font-size: 0.9em;
+
+      .d-icon {
+        font-size: 1.1em;
+      }
+    }
+  }
+
+  .points-mall-content {
+    padding: 15px;
+  }
+}
+
+.points-mall-checkin {
+  .checkin-overview-grid,
+  .checkin-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkin-summary-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .checkin-calendar-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .checkin-calendar-head-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .checkin-calendar-grid {
+    gap: 6px;
+  }
+
+  .checkin-calendar-card {
+    overflow-x: auto;
+  }
+
+  .checkin-day-cell {
+    min-height: 72px;
+
+    strong {
+      font-size: 1em;
+    }
+  }
+
+  .checkin-ranking-list {
+    max-height: none;
+  }
+
+  .checkin-ranking-item {
+    grid-template-columns: auto 1fr;
+  }
+
+  .rank-points {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+.points-mall-shop {
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.points-mall-orders {
+  .orders-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .orders-summary {
+    width: 100%;
+  }
+
+  .orders-summary-item {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .orders-type-filters {
+    overflow: auto;
+    white-space: nowrap;
+
+    .orders-type-filter {
+      flex: 0 0 auto;
+    }
+  }
+
+  .order-card {
+    flex-direction: row;
+  }
+
+  .order-product-thumb {
+    width: 58px;
+    height: 58px;
+  }
+
+  .orders-empty {
+    padding: 28px 12px;
+  }
+
+  .points-mall-addresses {
+    .points-mall-addresses-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .points-mall-address-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .points-mall-address-actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
+}
+
+.points-mall-ledger {
+  .ledger-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ledger-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ledger-filter-row {
+    overflow: auto;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+
+    .ledger-filter-item {
+      flex: 0 0 auto;
+    }
+  }
+
+  .ledger-event-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ledger-event-points {
+    align-self: flex-end;
+  }
+}
+
+.points-mall-address-form-grid {
+  grid-template-columns: 1fr;
+}
+
+.points-mall-modal-backdrop {
+  padding: 10px;
+}
+
+.points-mall-modal {
+  width: 100%;
+  max-height: 95vh;
+}
+
+.points-mall-modal-header {
+  padding: 16px 16px 12px;
+
+  h3 {
+    font-size: 1.25rem;
+  }
+}
+
+.points-mall-modal-body {
+  padding: 14px 16px;
+}
+
+.points-mall-modal-footer {
+  padding: 12px 16px 16px;
+  gap: 8px;
+
+  .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+.points-mall-admin {
+  .points-mall-admin-overview-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .points-mall-admin-subgrid {
+    grid-template-columns: 1fr;
+  }
+
+  .points-mall-admin-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .points-mall-admin-input,
+  .points-mall-admin-select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .points-mall-admin-orders-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .points-mall-admin-order-filters {
+    width: 100%;
+  }
+
+  .points-mall-admin-chip-row {
+    overflow: auto;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+
+    .points-mall-admin-chip {
+      flex: 0 0 auto;
+    }
+  }
+
+  .points-mall-admin-order-date {
+    margin-left: 0;
+  }
+
+  .points-mall-admin-order-main {
+    grid-template-columns: 1fr;
+  }
+
+  .points-mall-admin-order-edit {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .points-mall-admin-order-field {
+    &.--notes {
+      .points-mall-admin-order-notes-input {
+        max-height: 140px;
+      }
+    }
+
+    &.--action {
+      align-items: stretch;
+
+      .points-mall-admin-order-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
