@@ -25,7 +25,7 @@ A comprehensive points mall plugin for Discourse that integrates with discourse-
 1. Add the plugin to your Discourse installation:
 ```bash
 cd /var/discourse
-git clone https://github.com/discourse/discourse-points-mall.git plugins/discourse-points-mall
+git clone https://github.com/VegaMonika/discourse-points-mall.git plugins/discourse-points-mall
 ```
 
 2. Rebuild your Discourse container:
