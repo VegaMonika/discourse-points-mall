@@ -1,11 +1,11 @@
-import EmberObject from "@ember/object";
-import { action, set } from "@ember/object";
-import { TrackedArray } from "@ember-compat/tracked-built-ins";
-import { service } from "@ember/service";
-import Controller from "@ember/controller";
 import { tracked } from "@glimmer/tracking";
+import Controller from "@ember/controller";
+import EmberObject, { action, set } from "@ember/object";
+import { trackedArray } from "@ember/reactive/collections";
+import { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import { i18n } from "discourse-i18n";
 
 function boolFromEvent(event) {
   return !!event?.target?.checked;
@@ -13,6 +13,7 @@ function boolFromEvent(event) {
 
 export default class AdminPluginsShowDiscoursePointsMallManageController extends Controller {
   @service toasts;
+
   @tracked adminOrderTypeFilter = "all";
   @tracked adminOrderStatusFilter = "all";
   @tracked orderEditVersion = 0;
@@ -23,7 +24,9 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
       description: product.description,
       points_cost: Number(product.points_cost || 0),
       stock:
-        product.stock === "" || product.stock === null || product.stock === undefined
+        product.stock === "" ||
+        product.stock === null ||
+        product.stock === undefined
           ? -1
           : Number(product.stock),
       product_type: product.product_type || "virtual",
@@ -40,11 +43,15 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
     this.model.dashboardStats = {
       products: this.model.products.length,
       totalOrders: this.model.orders.length,
-      physicalOrders: this.model.orders.filter((order) => this.adminOrderType(order) === "physical")
-        .length,
-      virtualOrders: this.model.orders.filter((order) => this.adminOrderType(order) === "virtual")
-        .length,
-      pendingOrders: this.model.orders.filter((order) => order.status === "pending").length,
+      physicalOrders: this.model.orders.filter(
+        (order) => this.adminOrderType(order) === "physical"
+      ).length,
+      virtualOrders: this.model.orders.filter(
+        (order) => this.adminOrderType(order) === "virtual"
+      ).length,
+      pendingOrders: this.model.orders.filter(
+        (order) => order.status === "pending"
+      ).length,
       todayCheckins: this.model.checkinSummary?.today_checkins || 0,
       todayCheckinPoints: this.model.checkinSummary?.today_points || 0,
     };
@@ -55,17 +62,25 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
     let orders = this.model.orders || [];
 
     if (this.adminOrderTypeFilter !== "all") {
-      orders = orders.filter((order) => this.adminOrderType(order) === this.adminOrderTypeFilter);
+      orders = orders.filter(
+        (order) => this.adminOrderType(order) === this.adminOrderTypeFilter
+      );
     }
 
     if (this.adminOrderStatusFilter !== "all") {
-      orders = orders.filter((order) => order.status === this.adminOrderStatusFilter);
+      orders = orders.filter(
+        (order) => order.status === this.adminOrderStatusFilter
+      );
     }
 
     return orders.map((order) => {
       const displayProductType = this.adminOrderType(order);
       set(order, "display_product_type", displayProductType);
-      set(order, "avatar_url", this.avatarUrlFromTemplate(order.avatar_template, 48));
+      set(
+        order,
+        "avatar_url",
+        this.avatarUrlFromTemplate(order.avatar_template, 48)
+      );
       set(order, "user_role_label_key", this.userRoleLabelKey(order));
       set(order, "user_role_class", this.userRoleClass(order));
       return order;
@@ -122,7 +137,7 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
 
   success() {
     this.toasts.success({
-      data: { message: I18n.t("saved") },
+      data: { message: i18n("saved") },
       duration: "short",
     });
   }
@@ -136,10 +151,13 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   async createProduct() {
     try {
       const payload = this.productPayload(this.model.newProduct);
-      const res = await ajax("/admin/plugins/discourse-points-mall/manage/products", {
-        type: "POST",
-        data: payload,
-      });
+      const res = await ajax(
+        "/admin/plugins/discourse-points-mall/manage/products",
+        {
+          type: "POST",
+          data: payload,
+        }
+      );
 
       this.model.products.unshift(EmberObject.create(res.product));
       this.model.newProduct = EmberObject.create({
@@ -189,20 +207,31 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   async saveMakeupConfig() {
     try {
       const makeupConfig = this.model.makeupConfig;
-      const res = await ajax("/admin/plugins/discourse-points-mall/manage/makeup-config", {
-        type: "PUT",
-        data: {
-          tier_1: Number(makeupConfig.tier_1 || 0),
-          tier_2: Number(makeupConfig.tier_2 || 0),
-          tier_3: Number(makeupConfig.tier_3 || 0),
-        },
-      });
+      const res = await ajax(
+        "/admin/plugins/discourse-points-mall/manage/makeup-config",
+        {
+          type: "PUT",
+          data: {
+            tier_1: Number(makeupConfig.tier_1 || 0),
+            tier_2: Number(makeupConfig.tier_2 || 0),
+            tier_3: Number(makeupConfig.tier_3 || 0),
+          },
+        }
+      );
 
-      Object.entries(res.makeup || {}).forEach(([key, value]) => set(makeupConfig, key, value));
+      Object.entries(res.makeup || {}).forEach(([key, value]) =>
+        set(makeupConfig, key, value)
+      );
 
-      const makeupProduct = this.model.products.find((product) => product.is_makeup_card);
+      const makeupProduct = this.model.products.find(
+        (product) => product.is_makeup_card
+      );
       if (makeupProduct) {
-        set(makeupProduct, "points_cost", Number(res.makeup?.tier_1 || makeupProduct.points_cost || 0));
+        set(
+          makeupProduct,
+          "points_cost",
+          Number(res.makeup?.tier_1 || makeupProduct.points_cost || 0)
+        );
       }
 
       this.success();
@@ -214,9 +243,12 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   @action
   async deleteProduct(product) {
     try {
-      await ajax(`/admin/plugins/discourse-points-mall/manage/products/${product.id}`, {
-        type: "DELETE",
-      });
+      await ajax(
+        `/admin/plugins/discourse-points-mall/manage/products/${product.id}`,
+        {
+          type: "DELETE",
+        }
+      );
       const index = this.model.products.indexOf(product);
       if (index > -1) {
         this.model.products.splice(index, 1);
@@ -268,14 +300,19 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   @action
   async saveOrder(order) {
     try {
-      const res = await ajax(`/admin/plugins/discourse-points-mall/manage/orders/${order.id}`, {
-        type: "PUT",
-        data: {
-          status: order.status,
-          notes: order.notes,
-        },
-      });
-      Object.entries(res.order || {}).forEach(([key, value]) => set(order, key, value));
+      const res = await ajax(
+        `/admin/plugins/discourse-points-mall/manage/orders/${order.id}`,
+        {
+          type: "PUT",
+          data: {
+            status: order.status,
+            notes: order.notes,
+          },
+        }
+      );
+      Object.entries(res.order || {}).forEach(([key, value]) =>
+        set(order, key, value)
+      );
       set(order, "notes", order.notes || "");
       set(order, "_original_status", order.status || "pending");
       set(order, "_original_notes", order.notes || "");
@@ -297,11 +334,13 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   @action
   async reloadCheckinSummary() {
     try {
-      const result = await ajax("/admin/plugins/discourse-points-mall/manage/checkins");
+      const result = await ajax(
+        "/admin/plugins/discourse-points-mall/manage/checkins"
+      );
       this.model.checkinSummary = result.summary || {};
-      this.model.checkinTrend = new TrackedArray(result.trend || []);
-      this.model.checkinTopUsers = new TrackedArray(result.top_users || []);
-      this.model.recentCheckins = new TrackedArray(result.recent_checkins || []);
+      this.model.checkinTrend = trackedArray(result.trend || []);
+      this.model.checkinTopUsers = trackedArray(result.top_users || []);
+      this.model.recentCheckins = trackedArray(result.recent_checkins || []);
       this.refreshDashboardStats();
       this.success();
     } catch (error) {

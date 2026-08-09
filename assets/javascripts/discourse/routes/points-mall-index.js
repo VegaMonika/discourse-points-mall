@@ -1,4 +1,3 @@
 import DiscourseRoute from "discourse/routes/discourse";
 
-export default class PointsMallIndexRoute extends DiscourseRoute {
-}
+export default class PointsMallIndexRoute extends DiscourseRoute {}

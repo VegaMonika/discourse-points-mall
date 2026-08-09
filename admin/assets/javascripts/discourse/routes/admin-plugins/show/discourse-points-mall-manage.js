@@ -1,5 +1,5 @@
 import EmberObject from "@ember/object";
-import { TrackedArray } from "@ember-compat/tracked-built-ins";
+import { trackedArray } from "@ember/reactive/collections";
 import { ajax } from "discourse/lib/ajax";
 import DiscourseRoute from "discourse/routes/discourse";
 
@@ -31,26 +31,29 @@ function defaultMakeupConfig() {
 
 export default class AdminPluginsShowDiscoursePointsMallManage extends DiscourseRoute {
   async model() {
-    const [productsRes, ordersRes, checkinsRes] =
-      await Promise.all([
-        ajax("/admin/plugins/discourse-points-mall/manage/products").catch(() => ({
+    const [productsRes, ordersRes, checkinsRes] = await Promise.all([
+      ajax("/admin/plugins/discourse-points-mall/manage/products").catch(
+        () => ({
           products: [],
-        })),
-        ajax("/admin/plugins/discourse-points-mall/manage/orders").catch(() => ({
-          orders: [],
-        })),
-        ajax("/admin/plugins/discourse-points-mall/manage/checkins").catch(() => ({
+        })
+      ),
+      ajax("/admin/plugins/discourse-points-mall/manage/orders").catch(() => ({
+        orders: [],
+      })),
+      ajax("/admin/plugins/discourse-points-mall/manage/checkins").catch(
+        () => ({
           summary: {},
           trend: [],
           top_users: [],
           recent_checkins: [],
-        })),
-      ]);
+        })
+      ),
+    ]);
 
-    const products = new TrackedArray(
+    const products = trackedArray(
       (productsRes.products || []).map((item) => EmberObject.create(item))
     );
-    const orders = new TrackedArray(
+    const orders = trackedArray(
       (ordersRes.orders || []).map((item) =>
         EmberObject.create({
           ...item,
@@ -62,9 +65,9 @@ export default class AdminPluginsShowDiscoursePointsMallManage extends Discourse
     );
 
     const checkinSummary = checkinsRes.summary || {};
-    const checkinTrend = new TrackedArray(checkinsRes.trend || []);
-    const checkinTopUsers = new TrackedArray(checkinsRes.top_users || []);
-    const recentCheckins = new TrackedArray(checkinsRes.recent_checkins || []);
+    const checkinTrend = trackedArray(checkinsRes.trend || []);
+    const checkinTopUsers = trackedArray(checkinsRes.top_users || []);
+    const recentCheckins = trackedArray(checkinsRes.recent_checkins || []);
 
     return {
       products,
@@ -76,10 +79,14 @@ export default class AdminPluginsShowDiscoursePointsMallManage extends Discourse
       dashboardStats: {
         products: products.length,
         totalOrders: orders.length,
-        physicalOrders: orders.filter((order) => order.product_type === "physical").length,
-        virtualOrders: orders.filter((order) => (order.product_type || "virtual") === "virtual")
+        physicalOrders: orders.filter(
+          (order) => order.product_type === "physical"
+        ).length,
+        virtualOrders: orders.filter(
+          (order) => (order.product_type || "virtual") === "virtual"
+        ).length,
+        pendingOrders: orders.filter((order) => order.status === "pending")
           .length,
-        pendingOrders: orders.filter((order) => order.status === "pending").length,
         todayCheckins: checkinSummary.today_checkins || 0,
         todayCheckinPoints: checkinSummary.today_points || 0,
       },

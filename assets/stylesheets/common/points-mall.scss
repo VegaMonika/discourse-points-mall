@@ -13,7 +13,11 @@
     padding: 18px 20px;
     border-radius: 16px;
     border: 1px solid var(--primary-low);
-    background: linear-gradient(135deg, var(--secondary) 0%, var(--primary-very-low) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--secondary) 0%,
+      var(--primary-very-low) 100%
+    );
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
 
     .points-mall-brand {
@@ -149,7 +153,11 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    background: linear-gradient(135deg, var(--secondary), var(--primary-very-low));
+    background: linear-gradient(
+      135deg,
+      var(--secondary),
+      var(--primary-very-low)
+    );
 
     h2 {
       margin: 0;
@@ -250,11 +258,16 @@
     flex-direction: column;
     gap: 10px;
     min-height: 220px;
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s,
+      transform 0.2s;
 
     &.equipped {
       border-color: var(--tertiary);
-      box-shadow: 0 0 0 1px var(--tertiary-low), 0 10px 26px rgba(0, 0, 0, 0.08);
+      box-shadow:
+        0 0 0 1px var(--tertiary-low),
+        0 10px 26px rgba(0, 0, 0, 0.08);
     }
 
     &.expired {
@@ -297,8 +310,16 @@
     border: 1px solid var(--primary-low);
     border-radius: 10px;
     background:
-      radial-gradient(circle at 25% 20%, rgba(109, 225, 255, 0.34), transparent 30%),
-      radial-gradient(circle at 76% 72%, rgba(255, 111, 196, 0.28), transparent 34%),
+      radial-gradient(
+        circle at 25% 20%,
+        rgba(109, 225, 255, 0.34),
+        transparent 30%
+      ),
+      radial-gradient(
+        circle at 76% 72%,
+        rgba(255, 111, 196, 0.28),
+        transparent 34%
+      ),
       linear-gradient(135deg, rgba(68, 80, 120, 0.32), rgba(18, 22, 35, 0.82));
 
     img {
@@ -345,7 +366,11 @@
       border: 0;
       background:
         linear-gradient(135deg, rgba(64, 215, 255, 0.28), transparent 45%),
-        repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.13) 0 1px, transparent 1px 14px);
+        repeating-linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.13) 0 1px,
+          transparent 1px 14px
+        );
       box-shadow: none;
     }
 
@@ -453,9 +478,21 @@ html.jn-theme-skin-starrail-neon {
 
 html.jn-theme-skin-starrail-neon body:not(.admin-interface) {
   background:
-    radial-gradient(circle at 12% 4%, rgba(105, 234, 255, 0.2), transparent 26%),
-    radial-gradient(circle at 92% 12%, rgba(255, 107, 199, 0.16), transparent 28%),
-    radial-gradient(circle at 70% 90%, rgba(255, 218, 100, 0.12), transparent 30%),
+    radial-gradient(
+      circle at 12% 4%,
+      rgba(105, 234, 255, 0.2),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 92% 12%,
+      rgba(255, 107, 199, 0.16),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 70% 90%,
+      rgba(255, 218, 100, 0.12),
+      transparent 30%
+    ),
     linear-gradient(180deg, #070b16 0%, #090712 55%, #05060c 100%) !important;
 }
 
@@ -468,8 +505,15 @@ html.jn-theme-skin-starrail-neon body:not(.admin-interface)::after {
   background:
     linear-gradient(90deg, rgba(105, 234, 255, 0.05) 1px, transparent 1px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    radial-gradient(circle at 50% 18%, rgba(105, 234, 255, 0.12), transparent 24%);
-  background-size: 44px 44px, 44px 44px, auto;
+    radial-gradient(
+      circle at 50% 18%,
+      rgba(105, 234, 255, 0.12),
+      transparent 24%
+    );
+  background-size:
+    44px 44px,
+    44px 44px,
+    auto;
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.82), transparent 86%);
 }
 
@@ -483,12 +527,16 @@ html.jn-theme-skin-starrail-neon .d-header-wrap {
     0 0 26px rgba(105, 234, 255, 0.16) !important;
 }
 
-html.jn-theme-skin-starrail-neon .points-mall-container .points-mall-header-card,
+html.jn-theme-skin-starrail-neon
+  .points-mall-container
+  .points-mall-header-card,
 html.jn-theme-skin-starrail-neon .points-mall-container .points-mall-content,
 html.jn-theme-skin-starrail-neon .points-mall-container .points-mall-nav-shell,
 html.jn-theme-skin-starrail-neon .points-mall-inventory .inventory-header,
 html.jn-theme-skin-starrail-neon .points-mall-inventory .inventory-section,
-html.jn-theme-skin-starrail-neon .points-mall-inventory .inventory-equipped-panel,
+html.jn-theme-skin-starrail-neon
+  .points-mall-inventory
+  .inventory-equipped-panel,
 html.jn-theme-skin-starrail-neon .topic-list,
 html.jn-theme-skin-starrail-neon .latest-topic-list-item,
 html.jn-theme-skin-starrail-neon .topic-post article {
@@ -503,7 +551,10 @@ html.jn-theme-skin-starrail-neon .topic-post article {
 }
 
 html.jn-theme-skin-starrail-neon .btn-primary,
-html.jn-theme-skin-starrail-neon .points-mall-container .points-mall-nav .points-mall-nav-item.active {
+html.jn-theme-skin-starrail-neon
+  .points-mall-container
+  .points-mall-nav
+  .points-mall-nav-item.active {
   background: linear-gradient(135deg, #69eaff, #756fff 58%, #ff6bc7) !important;
   color: #07101a !important;
   border-color: transparent !important;
@@ -951,7 +1002,11 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
     border: 1px solid var(--primary-low);
     border-radius: 12px;
     padding: 12px 14px;
-    background: linear-gradient(155deg, var(--secondary), var(--primary-very-low));
+    background: linear-gradient(
+      155deg,
+      var(--secondary),
+      var(--primary-very-low)
+    );
     box-shadow: 0 10px 18px rgba(0, 0, 0, 0.05);
 
     span {
@@ -1062,7 +1117,11 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
     border-radius: 16px;
     padding: 14px;
     background:
-      radial-gradient(circle at top right, rgba(54, 107, 228, 0.16), transparent 28%),
+      radial-gradient(
+        circle at top right,
+        rgba(54, 107, 228, 0.16),
+        transparent 28%
+      ),
       linear-gradient(145deg, rgba(17, 39, 90, 0.05), rgba(37, 86, 207, 0.06));
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.08);
   }
@@ -1077,7 +1136,11 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
   .shop-section {
     border: 1px solid var(--primary-low);
     border-radius: 14px;
-    background: linear-gradient(160deg, var(--secondary), var(--primary-very-low));
+    background: linear-gradient(
+      160deg,
+      var(--secondary),
+      var(--primary-very-low)
+    );
     padding: 12px;
   }
 
@@ -1135,7 +1198,11 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
     gap: 12px;
 
     .product-card {
-      background: linear-gradient(170deg, var(--secondary), var(--primary-very-low));
+      background: linear-gradient(
+        170deg,
+        var(--secondary),
+        var(--primary-very-low)
+      );
       border-radius: 12px;
       border: 1px solid var(--primary-low);
       overflow: hidden;
@@ -1153,7 +1220,11 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
       &.is-featured {
         border-color: rgba(37, 86, 207, 0.24);
         background:
-          radial-gradient(circle at top right, rgba(53, 116, 241, 0.14), transparent 30%),
+          radial-gradient(
+            circle at top right,
+            rgba(53, 116, 241, 0.14),
+            transparent 30%
+          ),
           linear-gradient(160deg, var(--secondary), rgba(49, 94, 201, 0.08));
       }
 
@@ -2346,7 +2417,11 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
   .points-mall-admin-order-card {
     border: 1px solid var(--primary-low);
     border-radius: 12px;
-    background: linear-gradient(150deg, var(--secondary), var(--primary-very-low));
+    background: linear-gradient(
+      150deg,
+      var(--secondary),
+      var(--primary-very-low)
+    );
     padding: 12px;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
   }
