@@ -7,6 +7,7 @@ export default class PointsMallOrdersRoute extends DiscourseRoute {
       const data = await response.json();
       return data;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Error loading orders:", error);
       return { orders: [] };
     }

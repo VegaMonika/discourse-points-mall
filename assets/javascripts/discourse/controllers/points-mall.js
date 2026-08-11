@@ -1,10 +1,11 @@
+import { tracked } from "@glimmer/tracking";
 import Controller from "@ember/controller";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
-import { htmlSafe } from "@ember/template";
-import { tracked } from "@glimmer/tracking";
+import { trustHTML } from "@ember/template";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import { i18n } from "discourse-i18n";
 
 const MAX_ADDRESSES = 3;
 const CALENDAR_WEEKDAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
@@ -88,7 +89,9 @@ export default class PointsMallController extends Controller {
   }
 
   get levelProgressStyle() {
-    return htmlSafe(`width: ${Number(this.levelProgress.progress_percent || 0)}%`);
+    return trustHTML(
+      `width: ${Number(this.levelProgress.progress_percent || 0)}%`
+    );
   }
 
   get rankingUsers() {
@@ -121,7 +124,9 @@ export default class PointsMallController extends Controller {
   }
 
   get makeupProduct() {
-    return (this.model.products || []).find((product) => product.is_makeup_card);
+    return (this.model.products || []).find(
+      (product) => product.is_makeup_card
+    );
   }
 
   get canBuyMakeupCard() {
@@ -166,11 +171,21 @@ export default class PointsMallController extends Controller {
   }
 
   get pointsFilters() {
-    return ["all", "income", "expense", "checkin", "shop", "community", "other"];
+    return [
+      "all",
+      "income",
+      "expense",
+      "checkin",
+      "shop",
+      "community",
+      "other",
+    ];
   }
 
   get shopProducts() {
-    return (this.model.products || []).map((product) => this.decorateShopProduct(product));
+    return (this.model.products || []).map((product) =>
+      this.decorateShopProduct(product)
+    );
   }
 
   get shopTypeFilters() {
@@ -187,7 +202,9 @@ export default class PointsMallController extends Controller {
     const products =
       this.shopTypeFilter === "all"
         ? this.shopProducts
-        : this.shopProducts.filter((product) => product.product_type === this.shopTypeFilter);
+        : this.shopProducts.filter(
+            (product) => product.product_type === this.shopTypeFilter
+          );
 
     products.forEach((product) => {
       const key = this.shopCategoryKey(product);
@@ -198,7 +215,7 @@ export default class PointsMallController extends Controller {
     });
 
     return [
-      { key: "all", label: I18n.t("points_mall.shop.filters.category.all") },
+      { key: "all", label: i18n("points_mall.shop.filters.category.all") },
       ...keys.map((key) => ({
         key,
         label: this.shopCategoryLabelByKey(key),
@@ -210,12 +227,18 @@ export default class PointsMallController extends Controller {
     const keyword = this.shopKeyword?.trim()?.toLowerCase() || "";
 
     const products = this.shopProducts.filter((product) => {
-      if (this.shopTypeFilter !== "all" && product.product_type !== this.shopTypeFilter) {
+      if (
+        this.shopTypeFilter !== "all" &&
+        product.product_type !== this.shopTypeFilter
+      ) {
         return false;
       }
 
       const categoryKey = this.shopCategoryKey(product);
-      if (this.shopCategoryFilter !== "all" && categoryKey !== this.shopCategoryFilter) {
+      if (
+        this.shopCategoryFilter !== "all" &&
+        categoryKey !== this.shopCategoryFilter
+      ) {
         return false;
       }
 
@@ -229,7 +252,9 @@ export default class PointsMallController extends Controller {
       return haystack.includes(keyword);
     });
 
-    return [...products].sort((left, right) => this.compareShopProducts(left, right));
+    return [...products].sort((left, right) =>
+      this.compareShopProducts(left, right)
+    );
   }
 
   get shopSections() {
@@ -252,7 +277,9 @@ export default class PointsMallController extends Controller {
   }
 
   get featuredShopProducts() {
-    return this.filteredShopProducts.filter((product) => product.featured).slice(0, 4);
+    return this.filteredShopProducts
+      .filter((product) => product.featured)
+      .slice(0, 4);
   }
 
   get showFeaturedShelf() {
@@ -265,7 +292,9 @@ export default class PointsMallController extends Controller {
 
   get shopInsights() {
     const products = this.filteredShopProducts;
-    const categories = new Set(products.map((product) => this.shopCategoryKey(product)));
+    const categories = new Set(
+      products.map((product) => this.shopCategoryKey(product))
+    );
     const featured = products.filter((product) => product.featured).length;
     const redeemed = products.reduce(
       (sum, product) => sum + Number(product.redeemed_count || 0),
@@ -302,7 +331,7 @@ export default class PointsMallController extends Controller {
     return {
       ...product,
       makeup_card: makeupCard,
-      makeup_tier_text: I18n.t("points_mall.shop.makeup.tiered_price", {
+      makeup_tier_text: i18n("points_mall.shop.makeup.tiered_price", {
         first: makeupCard.tier_1,
         second: makeupCard.tier_2,
         third: makeupCard.tier_3,
@@ -342,8 +371,12 @@ export default class PointsMallController extends Controller {
 
   get orderSummary() {
     const orders = this.model.orders || [];
-    const physical = orders.filter((order) => this.orderProductType(order) === "physical").length;
-    const virtual = orders.filter((order) => this.orderProductType(order) === "virtual").length;
+    const physical = orders.filter(
+      (order) => this.orderProductType(order) === "physical"
+    ).length;
+    const virtual = orders.filter(
+      (order) => this.orderProductType(order) === "virtual"
+    ).length;
 
     return {
       all: orders.length,
@@ -357,7 +390,9 @@ export default class PointsMallController extends Controller {
     const filtered =
       this.orderTypeFilter === "all"
         ? orders
-        : orders.filter((order) => this.orderProductType(order) === this.orderTypeFilter);
+        : orders.filter(
+            (order) => this.orderProductType(order) === this.orderTypeFilter
+          );
 
     return filtered.map((order) => ({
       ...order,
@@ -414,7 +449,9 @@ export default class PointsMallController extends Controller {
   }
 
   get selectedCheckoutAddress() {
-    return this.addresses.find((address) => address.id === this.checkoutSelectedAddressId);
+    return this.addresses.find(
+      (address) => address.id === this.checkoutSelectedAddressId
+    );
   }
 
   get checkoutTitleKey() {
@@ -469,7 +506,7 @@ export default class PointsMallController extends Controller {
       await this.reloadLedger();
 
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.checkin.success", {
+        text: i18n("points_mall.checkin.success", {
           points: checkin.points_earned,
         }),
         messageClass: "success",
@@ -516,7 +553,7 @@ export default class PointsMallController extends Controller {
       await this.reloadLedger();
 
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.checkin.makeup_success"),
+        text: i18n("points_mall.checkin.makeup_success"),
         messageClass: "success",
       });
     } catch (error) {
@@ -533,7 +570,7 @@ export default class PointsMallController extends Controller {
   buyMakeupCard() {
     if (!this.makeupProduct) {
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.checkin.makeup_product_missing"),
+        text: i18n("points_mall.checkin.makeup_product_missing"),
         messageClass: "warning",
       });
       return;
@@ -555,7 +592,7 @@ export default class PointsMallController extends Controller {
           ? "points_mall.shop.makeup.off_shelf"
           : "points_mall.shop.makeup.limit_reached";
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t(messageKey),
+        text: i18n(messageKey),
         messageClass: "warning",
       });
       return;
@@ -589,7 +626,9 @@ export default class PointsMallController extends Controller {
   useNewAddressInCheckout() {
     if (!this.canCreateMoreAddresses) {
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.addresses.max_reached", { count: MAX_ADDRESSES }),
+        text: i18n("points_mall.addresses.max_reached", {
+          count: MAX_ADDRESSES,
+        }),
         messageClass: "warning",
       });
       return;
@@ -605,7 +644,8 @@ export default class PointsMallController extends Controller {
       return;
     }
 
-    this.checkoutStep = this.addresses.length === 1 ? "physical-confirm" : "physical-select";
+    this.checkoutStep =
+      this.addresses.length === 1 ? "physical-confirm" : "physical-select";
   }
 
   @action
@@ -637,7 +677,9 @@ export default class PointsMallController extends Controller {
 
       if (this.checkoutProduct.product_type === "physical") {
         if (this.checkoutStep === "physical-form") {
-          const payload = this.normalizeAddressPayload(this.checkoutAddressForm);
+          const payload = this.normalizeAddressPayload(
+            this.checkoutAddressForm
+          );
           const addressId = await this.createAddress(payload);
           if (!addressId) {
             return;
@@ -646,7 +688,7 @@ export default class PointsMallController extends Controller {
         } else {
           if (!this.checkoutSelectedAddressId) {
             this.appEvents.trigger("modal-body:flash", {
-              text: I18n.t("points_mall.checkout.select_address_required"),
+              text: i18n("points_mall.checkout.select_address_required"),
               messageClass: "warning",
             });
             return;
@@ -685,7 +727,7 @@ export default class PointsMallController extends Controller {
       );
 
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.shop.purchase_success"),
+        text: i18n("points_mall.shop.purchase_success"),
         messageClass: "success",
       });
 
@@ -694,7 +736,11 @@ export default class PointsMallController extends Controller {
       await this.reloadCheckinSummary();
       await this.reloadInventory();
 
-      this.activeTab = isMakeupCard ? "checkin" : isCosmetic ? "inventory" : "orders";
+      this.activeTab = isMakeupCard
+        ? "checkin"
+        : isCosmetic
+          ? "inventory"
+          : "orders";
       this.notifyPropertyChange("model");
       this.resetPurchaseModal();
     } catch (error) {
@@ -708,7 +754,9 @@ export default class PointsMallController extends Controller {
   openCreateAddressEditor() {
     if (!this.canCreateMoreAddresses) {
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.addresses.max_reached", { count: MAX_ADDRESSES }),
+        text: i18n("points_mall.addresses.max_reached", {
+          count: MAX_ADDRESSES,
+        }),
         messageClass: "warning",
       });
       return;
@@ -773,7 +821,9 @@ export default class PointsMallController extends Controller {
       } else {
         if (!this.canCreateMoreAddresses) {
           this.appEvents.trigger("modal-body:flash", {
-            text: I18n.t("points_mall.addresses.max_reached", { count: MAX_ADDRESSES }),
+            text: i18n("points_mall.addresses.max_reached", {
+              count: MAX_ADDRESSES,
+            }),
             messageClass: "warning",
           });
           return;
@@ -788,7 +838,7 @@ export default class PointsMallController extends Controller {
       await this.reloadAddresses();
 
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t(
+        text: i18n(
           this.editingAddressId
             ? "points_mall.addresses.updated"
             : "points_mall.addresses.created"
@@ -806,7 +856,8 @@ export default class PointsMallController extends Controller {
 
   @action
   async deleteAddress(addressId) {
-    if (!window.confirm(I18n.t("points_mall.addresses.delete_confirm"))) {
+    // eslint-disable-next-line no-alert
+    if (!window.confirm(i18n("points_mall.addresses.delete_confirm"))) {
       return;
     }
 
@@ -817,7 +868,7 @@ export default class PointsMallController extends Controller {
       await this.reloadAddresses();
 
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.addresses.deleted"),
+        text: i18n("points_mall.addresses.deleted"),
         messageClass: "success",
       });
 
@@ -839,7 +890,7 @@ export default class PointsMallController extends Controller {
       await this.reloadAddresses();
 
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.addresses.default_updated"),
+        text: i18n("points_mall.addresses.default_updated"),
         messageClass: "success",
       });
     } catch (error) {
@@ -858,9 +909,12 @@ export default class PointsMallController extends Controller {
       this.checkoutStep = "physical-confirm";
       this.checkoutSelectedAddressId = this.addresses[0].id;
     } else {
-      const defaultAddress = this.addresses.find((address) => address.is_default);
+      const defaultAddress = this.addresses.find(
+        (address) => address.is_default
+      );
       this.checkoutStep = "physical-select";
-      this.checkoutSelectedAddressId = defaultAddress?.id || this.addresses[0].id;
+      this.checkoutSelectedAddressId =
+        defaultAddress?.id || this.addresses[0].id;
     }
 
     this.purchaseModalOpen = true;
@@ -915,7 +969,7 @@ export default class PointsMallController extends Controller {
       this.notifyPropertyChange("model");
 
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.inventory.equip_success"),
+        text: i18n("points_mall.inventory.equip_success"),
         messageClass: "success",
       });
     } catch (error) {
@@ -939,7 +993,7 @@ export default class PointsMallController extends Controller {
       this.notifyPropertyChange("model");
 
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.inventory.unequip_success"),
+        text: i18n("points_mall.inventory.unequip_success"),
         messageClass: "success",
       });
     } catch (error) {
@@ -963,7 +1017,7 @@ export default class PointsMallController extends Controller {
   async createAddress(payload) {
     if (!this.validateAddressForm(payload)) {
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.addresses.required_error"),
+        text: i18n("points_mall.addresses.required_error"),
         messageClass: "warning",
       });
       return null;
@@ -971,7 +1025,9 @@ export default class PointsMallController extends Controller {
 
     if (!this.canCreateMoreAddresses) {
       this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.addresses.max_reached", { count: MAX_ADDRESSES }),
+        text: i18n("points_mall.addresses.max_reached", {
+          count: MAX_ADDRESSES,
+        }),
         messageClass: "warning",
       });
       return null;
@@ -1020,20 +1076,22 @@ export default class PointsMallController extends Controller {
       return key;
     }
 
-    return product?.product_type === "physical" ? "default_physical" : "default_virtual";
+    return product?.product_type === "physical"
+      ? "default_physical"
+      : "default_virtual";
   }
 
   shopCategoryLabelByKey(key) {
     if (!key || key === "uncategorized") {
-      return I18n.t("points_mall.shop.filters.category.uncategorized");
+      return i18n("points_mall.shop.filters.category.uncategorized");
     }
 
     if (key === "default_physical") {
-      return I18n.t("points_mall.shop.filters.category.default_physical");
+      return i18n("points_mall.shop.filters.category.default_physical");
     }
 
     if (key === "default_virtual") {
-      return I18n.t("points_mall.shop.filters.category.default_virtual");
+      return i18n("points_mall.shop.filters.category.default_virtual");
     }
 
     return key;
@@ -1044,23 +1102,40 @@ export default class PointsMallController extends Controller {
       case "popular":
         return this.compareByPopular(left, right);
       case "price_asc":
-        return this.compareByNumber(left?.points_cost, right?.points_cost, true);
+        return this.compareByNumber(
+          left?.points_cost,
+          right?.points_cost,
+          true
+        );
       case "price_desc":
-        return this.compareByNumber(left?.points_cost, right?.points_cost, false);
+        return this.compareByNumber(
+          left?.points_cost,
+          right?.points_cost,
+          false
+        );
       case "latest":
-        return this.compareByNumber(this.productCreatedAt(right), this.productCreatedAt(left), true);
+        return this.compareByNumber(
+          this.productCreatedAt(right),
+          this.productCreatedAt(left),
+          true
+        );
       default:
         return this.compareByDefault(left, right);
     }
   }
 
   compareByDefault(left, right) {
-    const featuredDiff = Number(Boolean(right?.featured)) - Number(Boolean(left?.featured));
+    const featuredDiff =
+      Number(Boolean(right?.featured)) - Number(Boolean(left?.featured));
     if (featuredDiff !== 0) {
       return featuredDiff;
     }
 
-    const sortDiff = this.compareByNumber(left?.sort_order, right?.sort_order, true);
+    const sortDiff = this.compareByNumber(
+      left?.sort_order,
+      right?.sort_order,
+      true
+    );
     if (sortDiff !== 0) {
       return sortDiff;
     }
@@ -1070,7 +1145,11 @@ export default class PointsMallController extends Controller {
       return popularDiff;
     }
 
-    return this.compareByNumber(this.productCreatedAt(right), this.productCreatedAt(left), true);
+    return this.compareByNumber(
+      this.productCreatedAt(right),
+      this.productCreatedAt(left),
+      true
+    );
   }
 
   compareByPopular(left, right) {
@@ -1083,7 +1162,11 @@ export default class PointsMallController extends Controller {
       return redeemedDiff;
     }
 
-    return this.compareByNumber(this.productCreatedAt(right), this.productCreatedAt(left), true);
+    return this.compareByNumber(
+      this.productCreatedAt(right),
+      this.productCreatedAt(left),
+      true
+    );
   }
 
   compareByNumber(left, right, asc = true) {

@@ -2,7 +2,9 @@ import { apiInitializer } from "discourse/lib/api";
 import { i18n } from "discourse-i18n";
 
 function currentUser(api) {
-  return api.getCurrentUser?.() || api.container?.lookup?.("service:current-user");
+  return (
+    api.getCurrentUser?.() || api.container?.lookup?.("service:current-user")
+  );
 }
 
 function usernameFromApi(api) {
@@ -18,7 +20,10 @@ function clearAvatarFrames() {
 function applyThemeSkin(themeSkin) {
   const root = document.documentElement;
   root.dataset.jnThemeSkin = themeSkin || "";
-  root.classList.toggle("jn-theme-skin-starrail-neon", themeSkin === "starrail_neon");
+  root.classList.toggle(
+    "jn-theme-skin-starrail-neon",
+    themeSkin === "starrail_neon"
+  );
 }
 
 function applyAvatarFrame(username, frame) {
@@ -71,12 +76,12 @@ async function refreshCurrentUserCosmetics(api) {
     const themeSkin = payload?.inventory?.equipped?.theme_skin?.value;
     applyAvatarFrame(username, frame);
     applyThemeSkin(themeSkin);
-  } catch (_error) {
+  } catch {
     // Cosmetic rendering should never block normal forum navigation.
   }
 }
 
-export default apiInitializer("1.8.0", (api) => {
+export default apiInitializer((api) => {
   api.addNavigationBarItem({
     name: "points-mall",
     displayName: i18n("points_mall.title"),
@@ -87,7 +92,10 @@ export default apiInitializer("1.8.0", (api) => {
   refreshCurrentUserCosmetics(api);
   window.addEventListener("jn:cosmetics-updated", (event) => {
     const inventory = event?.detail?.inventory || {};
-    applyAvatarFrame(usernameFromApi(api), inventory?.equipped?.avatar_frame?.value);
+    applyAvatarFrame(
+      usernameFromApi(api),
+      inventory?.equipped?.avatar_frame?.value
+    );
     applyThemeSkin(inventory?.equipped?.theme_skin?.value);
   });
   api.onPageChange(() => {
