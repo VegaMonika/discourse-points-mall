@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class PointsMallCheckin < ActiveRecord::Base
-  self.table_name = 'points_mall_checkins'
+  self.table_name = "points_mall_checkins"
 
   belongs_to :user
 
@@ -11,12 +11,18 @@ class PointsMallCheckin < ActiveRecord::Base
 
   scope :for_user, ->(user_id) { where(user_id: user_id) }
   scope :recent, -> { order(checkin_date: :desc) }
-  scope :today, -> { where(checkin_date: Time.zone.today) }
+  scope :today, -> { where(checkin_date: beijing_today) }
 
   after_create :award_points
 
+  def self.beijing_today
+    Time.current.in_time_zone("Asia/Shanghai").to_date
+  end
+
   def self.checkin_for_user(user)
-    return nil if where(user_id: user.id, checkin_date: Time.zone.today).exists?
+    today = beijing_today
+
+    return nil if where(user_id: user.id, checkin_date: today).exists?
 
     last_checkin = where(user_id: user.id).order(checkin_date: :desc).first
     streak = calculate_streak(last_checkin)
@@ -27,7 +33,7 @@ class PointsMallCheckin < ActiveRecord::Base
 
     create!(
       user_id: user.id,
-      checkin_date: Time.zone.today,
+      checkin_date: today,
       points_earned: total_points,
       streak_days: streak
     )
@@ -36,7 +42,7 @@ class PointsMallCheckin < ActiveRecord::Base
   def self.calculate_streak(last_checkin)
     return 1 unless last_checkin
 
-    if last_checkin.checkin_date == Time.zone.yesterday
+    if last_checkin.checkin_date == beijing_today - 1.day
       last_checkin.streak_days + 1
     else
       1
