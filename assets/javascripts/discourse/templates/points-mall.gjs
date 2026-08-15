@@ -31,6 +31,11 @@ export default <template>
             type="button"
             class="points-mall-nav-item
               {{if (eq @controller.activeTab tab.name) 'active'}}"
+            aria-current={{if
+              (eq @controller.activeTab tab.name)
+              "page"
+              "false"
+            }}
             {{on "click" (fn @controller.switchTab tab.name)}}
           >
             {{dIcon tab.icon}}
@@ -268,6 +273,113 @@ export default <template>
 
       {{#if (eq @controller.activeTab "shop")}}
         <div class="points-mall-shop">
+          <div class="shop-command-bar">
+            <div class="shop-command-balance">
+              <span class="shop-command-balance-icon">{{dIcon "coins"}}</span>
+              <strong>{{@controller.currentUser.points_balance}}</strong>
+              <span>{{i18n "points_mall.storefront.points_unit"}}</span>
+            </div>
+
+            <label class="shop-command-search">
+              {{dIcon "magnifying-glass"}}
+              <Input
+                @value={{@controller.shopKeyword}}
+                aria-label={{i18n "points_mall.shop.search_placeholder"}}
+                placeholder={{i18n "points_mall.shop.search_placeholder"}}
+                class="shop-search-input"
+                {{on "input" @controller.updateShopKeyword}}
+              />
+            </label>
+
+            <div class="shop-command-actions">
+              <button
+                type="button"
+                class="shop-command-action"
+                title={{i18n "points_mall.nav.orders"}}
+                aria-label={{i18n "points_mall.nav.orders"}}
+                {{on "click" (fn @controller.switchTab "orders")}}
+              >
+                {{dIcon "receipt"}}
+              </button>
+              <button
+                type="button"
+                class="shop-command-action"
+                title={{i18n "points_mall.nav.inventory"}}
+                aria-label={{i18n "points_mall.nav.inventory"}}
+                {{on "click" (fn @controller.switchTab "inventory")}}
+              >
+                {{dIcon "box-open"}}
+              </button>
+              <button
+                type="button"
+                class="shop-command-action"
+                title={{i18n "points_mall.nav.ledger"}}
+                aria-label={{i18n "points_mall.nav.ledger"}}
+                {{on "click" (fn @controller.switchTab "ledger")}}
+              >
+                {{dIcon "wallet"}}
+              </button>
+            </div>
+          </div>
+
+          <section class="shop-storefront-hero">
+            <div class="shop-promo-banner">
+              <div class="shop-promo-copy">
+                <span>{{i18n "points_mall.storefront.eyebrow"}}</span>
+                <h2>{{i18n "points_mall.storefront.hero_title"}}</h2>
+                <p>{{i18n "points_mall.storefront.hero_tip"}}</p>
+                <button
+                  type="button"
+                  class="btn shop-promo-button"
+                  {{on "click" (fn @controller.switchTab "checkin")}}
+                >
+                  {{dIcon "calendar-check"}}
+                  {{i18n "points_mall.storefront.checkin_cta"}}
+                </button>
+              </div>
+              <div class="shop-promo-visual" aria-hidden="true">
+                <span class="shop-promo-orbit orbit-one"></span>
+                <span class="shop-promo-orbit orbit-two"></span>
+                {{dIcon "gift"}}
+              </div>
+            </div>
+
+            <aside class="shop-member-card">
+              <div class="shop-member-head">
+                <span class="shop-member-avatar">{{dIcon "user"}}</span>
+                <div>
+                  <small>{{i18n "points_mall.storefront.welcome_back"}}</small>
+                  <strong>{{@controller.currentUser.username}}</strong>
+                </div>
+              </div>
+              <div class="shop-member-points">
+                <span>{{i18n "points_mall.storefront.available_points"}}</span>
+                <strong>{{@controller.currentUser.points_balance}}</strong>
+                <small>{{i18n "points_mall.storefront.points_tip"}}</small>
+              </div>
+              <div class="shop-member-links">
+                <button
+                  type="button"
+                  {{on "click" (fn @controller.switchTab "orders")}}
+                >{{dIcon "receipt"}}{{i18n "points_mall.nav.orders"}}</button>
+                <button
+                  type="button"
+                  {{on "click" (fn @controller.switchTab "ledger")}}
+                >{{dIcon "wallet"}}{{i18n "points_mall.nav.ledger"}}</button>
+                <button
+                  type="button"
+                  {{on "click" (fn @controller.switchTab "inventory")}}
+                >{{dIcon "box-open"}}{{i18n "points_mall.nav.inventory"}}</button>
+                <button
+                  type="button"
+                  {{on "click" (fn @controller.switchTab "checkin")}}
+                >{{dIcon "calendar-check"}}{{i18n
+                    "points_mall.nav.checkin"
+                  }}</button>
+              </div>
+            </aside>
+          </section>
+
           <div class="shop-header">
             <div>
               <h2>{{i18n "points_mall.shop.title"}}</h2>
@@ -304,21 +416,17 @@ export default <template>
 
           {{#if @controller.model.products.length}}
             <div class="shop-toolbar">
-              <div class="shop-search-wrap">
-                <Input
-                  @value={{@controller.shopKeyword}}
-                  placeholder={{i18n "points_mall.shop.search_placeholder"}}
-                  class="shop-search-input"
-                  {{on "input" @controller.updateShopKeyword}}
-                />
-              </div>
-
               <div class="shop-filter-row">
                 {{#each @controller.shopTypeFilters as |filter|}}
                   <button
                     type="button"
                     class="shop-filter-chip
                       {{if (eq @controller.shopTypeFilter filter) 'active'}}"
+                    aria-pressed={{if
+                      (eq @controller.shopTypeFilter filter)
+                      "true"
+                      "false"
+                    }}
                     {{on "click" (fn @controller.setShopTypeFilter filter)}}
                   >
                     {{i18n (concat "points_mall.shop.filters.type." filter)}}
@@ -335,6 +443,11 @@ export default <template>
                         (eq @controller.shopCategoryFilter option.key)
                         'active'
                       }}"
+                    aria-pressed={{if
+                      (eq @controller.shopCategoryFilter option.key)
+                      "true"
+                      "false"
+                    }}
                     {{on
                       "click"
                       (fn @controller.setShopCategoryFilter option.key)
@@ -351,6 +464,11 @@ export default <template>
                     type="button"
                     class="shop-sort-chip
                       {{if (eq @controller.shopSort sort) 'active'}}"
+                    aria-pressed={{if
+                      (eq @controller.shopSort sort)
+                      "true"
+                      "false"
+                    }}
                     {{on "click" (fn @controller.setShopSort sort)}}
                   >
                     {{i18n (concat "points_mall.shop.sort." sort)}}
@@ -394,6 +512,10 @@ export default <template>
                               src={{product.image_url}}
                               alt={{product.name}}
                             />
+                          </div>
+                        {{else}}
+                          <div class="product-image product-image-placeholder">
+                            {{dIcon "gift"}}
                           </div>
                         {{/if}}
 
@@ -550,6 +672,10 @@ export default <template>
                                 src={{product.image_url}}
                                 alt={{product.name}}
                               />
+                            </div>
+                          {{else}}
+                            <div class="product-image product-image-placeholder">
+                              {{dIcon "gift"}}
                             </div>
                           {{/if}}
                           <div class="product-info">
@@ -901,6 +1027,11 @@ export default <template>
                 type="button"
                 class="orders-type-filter
                   {{if (eq @controller.orderTypeFilter filter) 'active'}}"
+                aria-pressed={{if
+                  (eq @controller.orderTypeFilter filter)
+                  "true"
+                  "false"
+                }}
                 {{on "click" (fn @controller.setOrderTypeFilter filter)}}
               >
                 {{i18n (concat "points_mall.orders.filters." filter)}}
@@ -1188,6 +1319,11 @@ export default <template>
                 type="button"
                 class="ledger-filter-item
                   {{if (eq @controller.pointsFilter filter) 'active'}}"
+                aria-pressed={{if
+                  (eq @controller.pointsFilter filter)
+                  "true"
+                  "false"
+                }}
                 {{on "click" (fn @controller.setPointsFilter filter)}}
               >
                 {{i18n (concat "points_mall.points.filters." filter)}}
