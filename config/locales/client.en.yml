@@ -8,6 +8,15 @@ en:
       title: "Points Mall"
       subtitle: "Check in for points and redeem practical rewards"
       balance: "Points Balance"
+      storefront:
+        points_unit: "points"
+        eyebrow: "JustNaiNai · Rewards"
+        hero_title: "Fresh rewards, every day"
+        hero_tip: "Check in, earn points, and redeem memberships, cosmetics, and community rewards."
+        checkin_cta: "Check in for points"
+        welcome_back: "Welcome back"
+        available_points: "Available points"
+        points_tip: "Redeem virtual products, cosmetics, and community rewards."
       admin:
         title: "Points Mall"
         manage: "Products, Orders & Check-ins"
