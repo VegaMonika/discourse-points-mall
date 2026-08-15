@@ -2,7 +2,7 @@
 
 # name: discourse-points-mall
 # about: A points mall plugin that integrates with discourse-gamification for check-ins and shop
-# version: 0.2.0
+# version: 0.2.1
 # authors: VegaMonika
 # url: https://github.com/VegaMonika/discourse-points-mall
 # required_version: 2.7.0
@@ -29,6 +29,10 @@ register_svg_icon "trash-can"
 register_svg_icon "trophy"
 register_svg_icon "wallet"
 register_svg_icon "minus"
+register_svg_icon "coins"
+register_svg_icon "magnifying-glass"
+register_svg_icon "receipt"
+register_svg_icon "box-open"
 
 module ::DiscoursePointsMall
   PLUGIN_NAME = "discourse-points-mall"
