@@ -8,6 +8,15 @@ zh_CN:
       title: "积分商城"
       subtitle: "签到赚积分，兑换超值好礼"
       balance: "积分余额"
+      storefront:
+        points_unit: "积分"
+        eyebrow: "宅宅妙妙屋 · 积分好物"
+        hero_title: "积分好礼，天天都有新发现"
+        hero_tip: "签到攒积分，兑换会员、装扮和社区专属好物。"
+        checkin_cta: "去签到领积分"
+        welcome_back: "欢迎回来"
+        available_points: "当前可用积分"
+        points_tip: "可用于兑换虚拟商品、装扮与社区好物。"
       admin:
         title: "积分商城"
         manage: "商品、订单与签到管理"
