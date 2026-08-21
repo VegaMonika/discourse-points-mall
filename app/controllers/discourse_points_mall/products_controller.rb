@@ -33,6 +33,8 @@ module DiscoursePointsMall
             badge_text: (::PointsMallProduct.has_badge_text? ? product.badge_text : nil),
             image_url: product.image_url,
             enabled: product.enabled,
+            price_brl: (product.respond_to?(:price_brl) ? product.price_brl : nil),
+            external_url: (product.respond_to?(:external_url) ? product.external_url : nil),
             created_at: product.created_at,
             redeemed_count: redeemed_counts[product.id].to_i,
             last_redeemed_at: last_redeemed_at[product.id],

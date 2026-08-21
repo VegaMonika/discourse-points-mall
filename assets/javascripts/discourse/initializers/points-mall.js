@@ -58,7 +58,7 @@ async function refreshCurrentUserCosmetics(api) {
   }
 
   try {
-    const response = await fetch("/points-mall/inventory", {
+    const response = await fetch("/loja/inventario", {
       credentials: "same-origin",
       headers: { Accept: "application/json" },
     });
@@ -77,12 +77,16 @@ async function refreshCurrentUserCosmetics(api) {
 }
 
 export default apiInitializer("1.8.0", (api) => {
-  api.addNavigationBarItem({
-    name: "points-mall",
-    displayName: i18n("points_mall.title"),
-    href: "/points-mall",
-    classNames: ["points-mall-nav"],
-  });
+  if (currentUser(api)) {
+    api.addNavigationBarItem({
+      name: "points-mall",
+      displayName: i18n("points_mall.title"),
+      href: "/loja",
+      classNames: ["points-mall-nav"],
+      customFilter: () => !!currentUser(api),
+      forceAfter: true,
+    });
+  }
 
   refreshCurrentUserCosmetics(api);
   window.addEventListener("jn:cosmetics-updated", (event) => {

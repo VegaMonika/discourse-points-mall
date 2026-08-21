@@ -6,6 +6,7 @@ import Controller from "@ember/controller";
 import { tracked } from "@glimmer/tracking";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import { i18n } from "discourse-i18n";
 
 function boolFromEvent(event) {
   return !!event?.target?.checked;
@@ -13,9 +14,58 @@ function boolFromEvent(event) {
 
 export default class AdminPluginsShowDiscoursePointsMallManageController extends Controller {
   @service toasts;
+  @tracked adminActiveTab = "overview";
+  @tracked showNewProductAccordion = false;
+  @tracked showMakeupAccordion = false;
+  @tracked adminProductQuery = "";
   @tracked adminOrderTypeFilter = "all";
   @tracked adminOrderStatusFilter = "all";
+  @tracked adminOrderQuery = "";
   @tracked orderEditVersion = 0;
+  @tracked editingProductId = null;
+
+  @action
+  setAdminActiveTab(tabName) {
+    this.adminActiveTab = tabName;
+  }
+
+  @action
+  toggleNewProductAccordion() {
+    this.showNewProductAccordion = !this.showNewProductAccordion;
+  }
+
+  @action
+  toggleMakeupAccordion() {
+    this.showMakeupAccordion = !this.showMakeupAccordion;
+  }
+
+  @action
+  updateAdminProductQuery(event) {
+    this.adminProductQuery = event?.target?.value || "";
+  }
+
+  get filteredAdminProducts() {
+    const products = this.model.products || [];
+    const query = (this.adminProductQuery || "").trim().toLowerCase();
+    if (!query) {
+      return products;
+    }
+    return products.filter((p) => {
+      const nameMatch = (p.name || "").toLowerCase().includes(query);
+      const catMatch = (p.category || "").toLowerCase().includes(query);
+      const descMatch = (p.description || "").toLowerCase().includes(query);
+      return nameMatch || catMatch || descMatch;
+    });
+  }
+
+  @action
+  toggleEditProduct(product) {
+    if (this.editingProductId === product.id) {
+      this.editingProductId = null;
+    } else {
+      this.editingProductId = product.id;
+    }
+  }
 
   productPayload(product) {
     return {
@@ -32,6 +82,10 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
       badge_text: (product.badge_text || "").trim(),
       image_url: product.image_url,
       enabled: !!product.enabled,
+      price_brl: product.price_brl !== "" && product.price_brl !== null && product.price_brl !== undefined ? Number(product.price_brl) : null,
+      external_url: (product.external_url || "").trim(),
+      grant_group_id: product.grant_group_id !== "" && product.grant_group_id !== null && product.grant_group_id !== undefined ? Number(product.grant_group_id) : null,
+      grant_duration_days: product.grant_duration_days !== "" && product.grant_duration_days !== null && product.grant_duration_days !== undefined ? Number(product.grant_duration_days) : null,
       sort_order: Number(product.sort_order || 0),
     };
   }
@@ -62,6 +116,16 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
       orders = orders.filter((order) => order.status === this.adminOrderStatusFilter);
     }
 
+    const query = (this.adminOrderQuery || "").trim().toLowerCase();
+    if (query) {
+      orders = orders.filter((order) => {
+        const idMatch = String(order.id).includes(query);
+        const userMatch = (order.username || "").toLowerCase().includes(query);
+        const productMatch = (order.product_name || "").toLowerCase().includes(query);
+        return idMatch || userMatch || productMatch;
+      });
+    }
+
     return orders.map((order) => {
       const displayProductType = this.adminOrderType(order);
       set(order, "display_product_type", displayProductType);
@@ -73,16 +137,20 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   }
 
   get adminOrderStatuses() {
-    return ["all", ...(this.model.orderStatuses || [])];
+    const list = this.model.orderStatuses || ["pending", "completed", "shipped", "canceled"];
+    if (!list.includes("refunded")) {
+      return ["all", ...list, "refunded"];
+    }
+    return ["all", ...list];
   }
 
   adminOrderType(order) {
     return order?.product_type || "virtual";
   }
 
+  @action
   isOrderDirty(order) {
-    // Force recomputation after local edit handlers run, even when EmberObject
-    // property tracking behaves inconsistently in template method calls.
+    // Force recomputation after local edit handlers run
     this.orderEditVersion;
     return (
       (order?.status || "") !== (order?._original_status || "") ||
@@ -122,7 +190,7 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
 
   success() {
     this.toasts.success({
-      data: { message: I18n.t("saved") },
+      data: { message: typeof I18n !== "undefined" ? I18n.t("saved") : i18n("saved") },
       duration: "short",
     });
   }
@@ -153,8 +221,13 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
         badge_text: "",
         image_url: "",
         enabled: true,
+        price_brl: "",
+        external_url: "",
+        grant_group_id: "",
+        grant_duration_days: "",
         sort_order: 0,
       });
+      this.showNewProductAccordion = false;
       this.refreshDashboardStats();
       this.success();
     } catch (error) {
@@ -234,6 +307,12 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   }
 
   @action
+  setProductGroup(product, event) {
+    const val = event.target.value;
+    set(product, "grant_group_id", val ? Number(val) : null);
+  }
+
+  @action
   setProductEnabled(product, event) {
     product.enabled = boolFromEvent(event);
   }
@@ -253,6 +332,11 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
   setOrderNotes(order, event) {
     set(order, "notes", event?.target?.value || "");
     this.orderEditVersion += 1;
+  }
+
+  @action
+  updateAdminOrderQuery(event) {
+    this.adminOrderQuery = event?.target?.value || "";
   }
 
   @action
@@ -292,6 +376,35 @@ export default class AdminPluginsShowDiscoursePointsMallManageController extends
     set(order, "status", order._original_status || "pending");
     set(order, "notes", order._original_notes || "");
     this.orderEditVersion += 1;
+  }
+
+  @action
+  async refundOrder(order) {
+    if (!order?.id) return;
+    const confirmText = `Tem certeza que deseja REEMBOLSAR o pedido #${order.id} (${order.product_name || 'Produto'})?\n\n- ${order.points_spent || 0} pontos serão devolvidos ao usuário (${order.username || 'Usuário'}).\n- Caso o produto conceda um grupo VIP, a permissão será revogada.`;
+
+    if (!window.confirm(confirmText)) {
+      return;
+    }
+
+    try {
+      const res = await ajax(`/admin/plugins/discourse-points-mall/manage/orders/${order.id}/refund`, {
+        type: "POST",
+      });
+
+      Object.entries(res.order || {}).forEach(([key, value]) => set(order, key, value));
+      set(order, "_original_status", order.status || "refunded");
+      set(order, "_original_notes", order.notes || "");
+      this.orderEditVersion += 1;
+      this.refreshDashboardStats();
+
+      this.toasts.success({
+        data: { message: "Pedido reembolsado com sucesso! Pontos estornados ao usuário." },
+        duration: "short",
+      });
+    } catch (error) {
+      popupAjaxError(error);
+    }
   }
 
   @action

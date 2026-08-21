@@ -52,7 +52,7 @@ class PointsMallCheckin < ActiveRecord::Base
     DiscoursePointsMall::PointsManager.add_points!(
       user: user,
       points: points_earned,
-      description: "积分商城签到奖励",
+      description: "Recompensa de Check-in Diário",
     )
   end
 end

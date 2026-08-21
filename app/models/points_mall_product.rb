@@ -32,6 +32,10 @@ class PointsMallProduct < ActiveRecord::Base
     column_names.include?("badge_text")
   end
 
+  def self.has_grant_group?
+    column_names.include?("grant_group_id")
+  end
+
   def self.ensure_makeup_card!
     return unless has_product_key?
     first_tier_price = DiscoursePointsMall::MakeupPricing.first_tier
@@ -42,26 +46,26 @@ class PointsMallProduct < ActiveRecord::Base
       end
       # Backfill legacy records without forcing admin custom values.
       if has_category? && existing.category.blank?
-        existing.update_column(:category, "签到工具")
+        existing.update_column(:category, "Ferramentas")
       end
       if has_badge_text? && existing.badge_text.blank?
-        existing.update_column(:badge_text, "补签")
+        existing.update_column(:badge_text, "Recuperação")
       end
       return
     end
 
     attrs = {
       product_key: MAKEUP_CARD_KEY,
-      name: "补签卡",
-      description: "用于补签本月漏签日期，每月最多购买与使用 3 次。未使用补签卡次月自动失效。",
+      name: "Cartão de Recuperação",
+      description: "Usado para recuperar dias de check-in perdidos neste mês. Válido até o final do mês.",
       points_cost: first_tier_price,
       stock: nil,
       product_type: "virtual",
       enabled: true,
       sort_order: -100,
     }
-    attrs[:category] = "签到工具" if has_category?
-    attrs[:badge_text] = "补签" if has_badge_text?
+    attrs[:category] = "Ferramentas" if has_category?
+    attrs[:badge_text] = "Recuperação" if has_badge_text?
     attrs[:featured] = false if has_featured?
     create!(attrs)
   rescue StandardError => e

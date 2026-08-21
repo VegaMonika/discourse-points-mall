@@ -1,7 +1,20 @@
 import { concat } from "@ember/helper";
-import dFormatDate from "discourse/ui-kit/helpers/d-format-date";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
 import { i18n } from "discourse-i18n";
+
+function formatDateFixed(dateVal) {
+  if (!dateVal) return "-";
+  if (typeof dateVal === "string" && dateVal.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const parts = dateVal.split("-");
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return String(dateVal);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
 
 export default <template>
   <div class="points-mall-orders">
@@ -21,7 +34,7 @@ export default <template>
                   {{i18n (concat "points_mall.orders.status." order.status)}}
                 </span>
                 <span class="order-date">
-                  {{dFormatDate order.created_at}}
+                  {{formatDateFixed order.created_at}}
                 </span>
               </div>
               {{#if order.shipping_info}}

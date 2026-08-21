@@ -2,9 +2,9 @@
 
 # name: discourse-points-mall
 # about: A points mall plugin that integrates with discourse-gamification for check-ins and shop
-# version: 0.2.1
+# version: 0.4.2
 # authors: VegaMonika
-# url: https://github.com/VegaMonika/discourse-points-mall
+# url: https://github.com/Segreverso/discourse-points-segredin
 # required_version: 2.7.0
 
 enabled_site_setting :points_mall_enabled
@@ -25,6 +25,7 @@ register_svg_icon "user"
 register_svg_icon "rotate-right"
 register_svg_icon "plus"
 register_svg_icon "save"
+register_svg_icon "floppy-disk"
 register_svg_icon "trash-can"
 register_svg_icon "trophy"
 register_svg_icon "wallet"
@@ -109,21 +110,21 @@ after_initialize do
   )
 
   Discourse::Application.routes.append do
-    scope module: "discourse_points_mall", path: "/points-mall" do
+    scope module: "discourse_points_mall", path: "/loja" do
       get "/" => "pages#index", format: false
-      resources :products, only: [:index, :show]
-      resources :orders, only: [:index, :create, :show]
-      resources :checkins, only: [:index, :create]
-      get "/checkins/summary" => "checkins#summary"
-      post "/checkins/makeup" => "checkins#makeup"
-      get "/points/ledger" => "points#ledger"
+      resources :products, path: "produtos", only: [:index, :show]
+      resources :orders, path: "pedidos", only: [:index, :create, :show]
+      resources :checkins, path: "checkin", only: [:index, :create]
+      get "/checkin/resumo" => "checkins#summary"
+      post "/checkin/recuperar" => "checkins#makeup"
+      get "/extrato" => "points#ledger"
       get "/shouts" => "shouts#index"
       post "/shouts" => "shouts#create"
       delete "/shouts/:id" => "shouts#destroy"
-      get "/inventory" => "inventory#index"
-      post "/inventory/equip" => "inventory#equip"
-      post "/inventory/unequip" => "inventory#unequip"
-      resources :addresses, only: %i[index create update destroy]
+      get "/inventario" => "inventory#index"
+      post "/inventario/equipar" => "inventory#equip"
+      post "/inventario/desequipar" => "inventory#unequip"
+      resources :addresses, path: "enderecos", only: %i[index create update destroy]
     end
 
     scope "/admin/plugins/discourse-points-mall", constraints: AdminConstraint.new do
@@ -138,6 +139,7 @@ after_initialize do
 
       get "/manage/orders" => "discourse_points_mall/admin_orders#index"
       put "/manage/orders/:id" => "discourse_points_mall/admin_orders#update"
+      post "/manage/orders/:id/refund" => "discourse_points_mall/admin_orders#refund"
 
       get "/manage/checkins" => "discourse_points_mall/admin_checkins#index"
     end

@@ -3,9 +3,32 @@ import { concat, fn } from "@ember/helper";
 import { on } from "@ember/modifier";
 import { eq, gt, not, or } from "discourse/truth-helpers";
 import DButton from "discourse/ui-kit/d-button";
-import dFormatDate from "discourse/ui-kit/helpers/d-format-date";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
 import { i18n } from "discourse-i18n";
+
+function formatDateFixed(dateVal) {
+  if (!dateVal) return "-";
+  if (typeof dateVal === "string" && dateVal.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const parts = dateVal.split("-");
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return String(dateVal);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+function formatBrl(val) {
+  if (val === null || val === undefined || val === "") return "";
+  const num = Number(val);
+  if (isNaN(num)) return String(val);
+  if (Number.isInteger(num)) {
+    return num.toString();
+  }
+  return num.toFixed(2).replace(".", ",");
+}
 
 export default <template>
   <div class="points-mall-container">
@@ -259,7 +282,7 @@ export default <template>
                 <tbody>
                   {{#each @controller.model.checkins as |checkin|}}
                     <tr>
-                      <td>{{dFormatDate checkin.checkin_date}}</td>
+                      <td>{{formatDateFixed checkin.checkin_date}}</td>
                       <td>{{checkin.points_earned}}</td>
                       <td>{{checkin.streak_days}}</td>
                     </tr>
@@ -300,15 +323,6 @@ export default <template>
                 {{on "click" (fn @controller.switchTab "orders")}}
               >
                 {{dIcon "receipt"}}
-              </button>
-              <button
-                type="button"
-                class="shop-command-action"
-                title={{i18n "points_mall.nav.inventory"}}
-                aria-label={{i18n "points_mall.nav.inventory"}}
-                {{on "click" (fn @controller.switchTab "inventory")}}
-              >
-                {{dIcon "box-open"}}
               </button>
               <button
                 type="button"
@@ -368,10 +382,6 @@ export default <template>
                 >{{dIcon "wallet"}}{{i18n "points_mall.nav.ledger"}}</button>
                 <button
                   type="button"
-                  {{on "click" (fn @controller.switchTab "inventory")}}
-                >{{dIcon "box-open"}}{{i18n "points_mall.nav.inventory"}}</button>
-                <button
-                  type="button"
                   {{on "click" (fn @controller.switchTab "checkin")}}
                 >{{dIcon "calendar-check"}}{{i18n
                     "points_mall.nav.checkin"
@@ -416,64 +426,78 @@ export default <template>
 
           {{#if @controller.model.products.length}}
             <div class="shop-toolbar">
-              <div class="shop-filter-row">
-                {{#each @controller.shopTypeFilters as |filter|}}
-                  <button
-                    type="button"
-                    class="shop-filter-chip
-                      {{if (eq @controller.shopTypeFilter filter) 'active'}}"
-                    aria-pressed={{if
-                      (eq @controller.shopTypeFilter filter)
-                      "true"
-                      "false"
-                    }}
-                    {{on "click" (fn @controller.setShopTypeFilter filter)}}
-                  >
-                    {{i18n (concat "points_mall.shop.filters.type." filter)}}
-                  </button>
-                {{/each}}
+              <div class="shop-nav-bar">
+                <div class="shop-type-pills">
+                  {{#each @controller.shopTypeFilters as |filter|}}
+                    <button
+                      type="button"
+                      class="shop-filter-chip
+                        {{if (eq @controller.shopTypeFilter filter) 'active'}}"
+                      aria-pressed={{if
+                        (eq @controller.shopTypeFilter filter)
+                        "true"
+                        "false"
+                      }}
+                      {{on "click" (fn @controller.setShopTypeFilter filter)}}
+                    >
+                      {{i18n (concat "points_mall.shop.filters.type." filter)}}
+                    </button>
+                  {{/each}}
+                </div>
+
+                <div class="shop-search-box">
+                  {{dIcon "magnifying-glass"}}
+                  <Input
+                    @value={{@controller.shopKeyword}}
+                    aria-label={{i18n "points_mall.shop.search_placeholder"}}
+                    placeholder={{i18n "points_mall.shop.search_placeholder"}}
+                    class="shop-search-input"
+                  />
+                </div>
               </div>
 
-              <div class="shop-filter-row">
-                {{#each @controller.shopCategoryOptions as |option|}}
-                  <button
-                    type="button"
-                    class="shop-filter-chip
-                      {{if
+              <div class="shop-secondary-row">
+                <div class="shop-filter-scroll">
+                  {{#each @controller.shopCategoryOptions as |option|}}
+                    <button
+                      type="button"
+                      class="shop-filter-chip
+                        {{if
+                          (eq @controller.shopCategoryFilter option.key)
+                          'active'
+                        }}"
+                      aria-pressed={{if
                         (eq @controller.shopCategoryFilter option.key)
-                        'active'
-                      }}"
-                    aria-pressed={{if
-                      (eq @controller.shopCategoryFilter option.key)
-                      "true"
-                      "false"
-                    }}
-                    {{on
-                      "click"
-                      (fn @controller.setShopCategoryFilter option.key)
-                    }}
-                  >
-                    {{option.label}}
-                  </button>
-                {{/each}}
-              </div>
+                        "true"
+                        "false"
+                      }}
+                      {{on
+                        "click"
+                        (fn @controller.setShopCategoryFilter option.key)
+                      }}
+                    >
+                      {{option.label}}
+                    </button>
+                  {{/each}}
 
-              <div class="shop-sort-row">
-                {{#each @controller.shopSortOptions as |sort|}}
-                  <button
-                    type="button"
-                    class="shop-sort-chip
-                      {{if (eq @controller.shopSort sort) 'active'}}"
-                    aria-pressed={{if
-                      (eq @controller.shopSort sort)
-                      "true"
-                      "false"
-                    }}
-                    {{on "click" (fn @controller.setShopSort sort)}}
-                  >
-                    {{i18n (concat "points_mall.shop.sort." sort)}}
-                  </button>
-                {{/each}}
+                  <span class="shop-filter-divider"></span>
+
+                  {{#each @controller.shopSortOptions as |sort|}}
+                    <button
+                      type="button"
+                      class="shop-sort-chip
+                        {{if (eq @controller.shopSort sort) 'active'}}"
+                      aria-pressed={{if
+                        (eq @controller.shopSort sort)
+                        "true"
+                        "false"
+                      }}
+                      {{on "click" (fn @controller.setShopSort sort)}}
+                    >
+                      {{i18n (concat "points_mall.shop.sort." sort)}}
+                    </button>
+                  {{/each}}
+                </div>
               </div>
             </div>
 
@@ -549,10 +573,14 @@ export default <template>
                           <p>{{product.description}}</p>
                           <div class="product-meta">
                             <span class="product-cost">
-                              {{i18n
-                                "points_mall.shop.cost"
-                                points=product.points_cost
-                              }}
+                              {{#if product.price_brl}}
+                                R$ {{formatBrl product.price_brl}}
+                              {{else}}
+                                {{i18n
+                                  "points_mall.shop.cost"
+                                  points=product.points_cost
+                                }}
+                              {{/if}}
                             </span>
                             <span class="product-stock">
                               {{#if (eq product.stock -1)}}
@@ -592,7 +620,23 @@ export default <template>
                         </div>
 
                         <div class="product-action">
-                          {{#if product.is_makeup_card}}
+                          {{#if product.external_url}}
+                            <a
+                              href={{product.external_url}}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="btn btn-primary btn-external-buy"
+                            >
+                              {{dIcon "external-link-alt"}}
+                              <span>
+                                {{#if product.price_brl}}
+                                  Comprar (R$ {{formatBrl product.price_brl}})
+                                {{else}}
+                                  Comprar
+                                {{/if}}
+                              </span>
+                            </a>
+                          {{else if product.is_makeup_card}}
                             {{#if product.purchaseable}}
                               <DButton
                                 @action={{fn @controller.buyProduct product.id}}
@@ -709,10 +753,14 @@ export default <template>
                             <p>{{product.description}}</p>
                             <div class="product-meta">
                               <span class="product-cost">
-                                {{i18n
-                                  "points_mall.shop.cost"
-                                  points=product.points_cost
-                                }}
+                                {{#if product.price_brl}}
+                                  R$ {{formatBrl product.price_brl}}
+                                {{else}}
+                                  {{i18n
+                                    "points_mall.shop.cost"
+                                    points=product.points_cost
+                                  }}
+                                {{/if}}
                               </span>
                               <span class="product-stock">
                                 {{#if (eq product.stock -1)}}
@@ -751,7 +799,23 @@ export default <template>
                             {{/if}}
                           </div>
                           <div class="product-action">
-                            {{#if product.is_makeup_card}}
+                            {{#if product.external_url}}
+                              <a
+                                href={{product.external_url}}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="btn btn-primary btn-external-buy"
+                              >
+                                {{dIcon "external-link-alt"}}
+                                <span>
+                                  {{#if product.price_brl}}
+                                    Comprar (R$ {{formatBrl product.price_brl}})
+                                  {{else}}
+                                    Comprar
+                                  {{/if}}
+                                </span>
+                              </a>
+                            {{else if product.is_makeup_card}}
                               {{#if product.purchaseable}}
                                 <DButton
                                   @action={{fn
@@ -813,181 +877,7 @@ export default <template>
         </div>
       {{/if}}
 
-      {{#if (eq @controller.activeTab "inventory")}}
-        <div class="points-mall-inventory">
-          <div class="inventory-header">
-            <div>
-              <h2>{{i18n "points_mall.inventory.title"}}</h2>
-              <p>{{i18n "points_mall.inventory.subtitle"}}</p>
-            </div>
-            <div class="inventory-ticket-card">
-              <span>{{i18n "points_mall.inventory.skin_ticket"}}</span>
-              <strong>{{@controller.themeSkinTicketCount}}</strong>
-            </div>
-          </div>
 
-          <section class="inventory-equipped-panel">
-            <div class="inventory-section-head">
-              <h3>{{i18n "points_mall.inventory.equipped_title"}}</h3>
-              <span>{{i18n "points_mall.inventory.equipped_tip"}}</span>
-            </div>
-
-            {{#if @controller.hasEquippedInventory}}
-              <div class="inventory-equipped-grid">
-                {{#each @controller.equippedInventoryItems as |item|}}
-                  <article class="inventory-equipped-item">
-                    <div>
-                      <span>{{item.kind_label}}</span>
-                      <strong>{{item.display_value}}</strong>
-                      {{#if item.expires_at}}
-                        <small>{{i18n "points_mall.inventory.expires_at"}}
-                          {{item.expires_display}}
-                          ·
-                          {{item.remaining_text}}</small>
-                      {{/if}}
-                    </div>
-                    <DButton
-                      @action={{fn @controller.unequipInventoryKind item.kind}}
-                      @label="points_mall.inventory.unequip"
-                      class="btn"
-                    />
-                  </article>
-                {{/each}}
-              </div>
-            {{else}}
-              <div class="inventory-empty-inline">
-                {{i18n "points_mall.inventory.no_equipped"}}
-              </div>
-            {{/if}}
-          </section>
-
-          <section class="inventory-section">
-            <div class="inventory-section-head">
-              <h3>{{i18n "points_mall.inventory.active_title"}}</h3>
-              <span>{{i18n
-                  "points_mall.inventory.active_count"
-                  count=@controller.activeInventoryItems.length
-                }}</span>
-            </div>
-
-            {{#if @controller.activeInventoryItems.length}}
-              <div class="inventory-grid">
-                {{#each @controller.activeInventoryItems as |item|}}
-                  <article
-                    class="inventory-card {{if item.equipped 'equipped'}}"
-                  >
-                    <div class="inventory-preview {{item.preview_class}}">
-                      {{#if item.image_url}}
-                        <img src={{item.image_url}} alt={{item.name}} />
-                      {{else}}
-                        <span>{{item.kind_label}}</span>
-                      {{/if}}
-                    </div>
-                    <div class="inventory-card-top">
-                      <span class="inventory-kind">{{item.kind_label}}</span>
-                      {{#if item.equipped}}
-                        <span class="inventory-status equipped">{{i18n
-                            "points_mall.inventory.equipped"
-                          }}</span>
-                      {{else if item.equippable}}
-                        <span class="inventory-status">{{i18n
-                            "points_mall.inventory.available"
-                          }}</span>
-                      {{else}}
-                        <span class="inventory-status ticket">{{i18n
-                            "points_mall.inventory.ticket"
-                          }}</span>
-                      {{/if}}
-                    </div>
-                    <h3>{{item.name}}</h3>
-                    <p>{{item.description}}</p>
-                    <div class="inventory-meta">
-                      <span>{{i18n "points_mall.inventory.granted_at"}}
-                        {{item.granted_display}}</span>
-                      {{#if item.expires_at}}
-                        <span>{{i18n "points_mall.inventory.expires_at"}}
-                          {{item.expires_display}}
-                          ·
-                          {{item.remaining_text}}</span>
-                      {{else}}
-                        <span>{{i18n "points_mall.inventory.permanent"}}</span>
-                      {{/if}}
-                    </div>
-
-                    {{#if item.equippable}}
-                      {{#if item.equipped}}
-                        <DButton
-                          @action={{fn
-                            @controller.unequipInventoryKind
-                            item.kind
-                          }}
-                          @label="points_mall.inventory.unequip"
-                          class="btn"
-                        />
-                      {{else}}
-                        <DButton
-                          @action={{fn @controller.equipInventoryItem item}}
-                          @label="points_mall.inventory.equip"
-                          class="btn-primary"
-                        />
-                      {{/if}}
-                    {{else}}
-                      <button type="button" class="btn btn-disabled" disabled>
-                        {{i18n "points_mall.inventory.not_equippable"}}
-                      </button>
-                    {{/if}}
-                  </article>
-                {{/each}}
-              </div>
-            {{else}}
-              <div class="empty-state inventory-empty">
-                <h3>{{i18n "points_mall.inventory.empty_title"}}</h3>
-                <p>{{i18n "points_mall.inventory.empty_tip"}}</p>
-                <DButton
-                  @action={{@controller.goToShop}}
-                  @label="points_mall.inventory.go_shop"
-                  @icon="gift"
-                  class="btn-primary"
-                />
-              </div>
-            {{/if}}
-          </section>
-
-          {{#if @controller.expiredInventoryItems.length}}
-            <section class="inventory-section">
-              <div class="inventory-section-head">
-                <h3>{{i18n "points_mall.inventory.expired_title"}}</h3>
-                <span>{{i18n "points_mall.inventory.expired_tip"}}</span>
-              </div>
-              <div class="inventory-grid expired">
-                {{#each @controller.expiredInventoryItems as |item|}}
-                  <article class="inventory-card expired">
-                    <div class="inventory-preview {{item.preview_class}}">
-                      {{#if item.image_url}}
-                        <img src={{item.image_url}} alt={{item.name}} />
-                      {{else}}
-                        <span>{{item.kind_label}}</span>
-                      {{/if}}
-                    </div>
-                    <div class="inventory-card-top">
-                      <span class="inventory-kind">{{item.kind_label}}</span>
-                      <span class="inventory-status expired">{{i18n
-                          "points_mall.inventory.expired"
-                        }}</span>
-                    </div>
-                    <h3>{{item.name}}</h3>
-                    <p>{{item.description}}</p>
-                    <div class="inventory-meta">
-                      <span>{{i18n "points_mall.inventory.expires_at"}}
-                        {{item.expires_display}}</span>
-                    </div>
-                  </article>
-                {{/each}}
-              </div>
-            </section>
-          {{/if}}
-        </div>
-      {{/if}}
 
       {{#if (eq @controller.activeTab "orders")}}
         <div class="points-mall-orders">
@@ -1041,72 +931,168 @@ export default <template>
 
           {{#if @controller.hasFilteredOrders}}
             <div class="orders-list">
-              {{#each @controller.filteredOrders as |order|}}
-                <div class="order-card">
-                  <div class="order-product-thumb">
-                    {{#if order.product.image_url}}
-                      <img
-                        src={{order.product.image_url}}
-                        alt={{order.product.name}}
-                      />
-                    {{else if (eq order.display_product_type "physical")}}
-                      {{dIcon "box"}}
-                    {{else}}
-                      {{dIcon "bolt"}}
-                    {{/if}}
-                  </div>
-
-                  <div class="order-info">
-                    <div class="order-title-row">
-                      <h3>{{order.product.name}}</h3>
-                      <span
-                        class="order-product-type type-{{order.display_product_type}}"
-                      >
-                        {{i18n
-                          (concat
-                            "points_mall.orders.types."
-                            order.display_product_type
-                          )
-                        }}
-                      </span>
+              {{#each @controller.paginatedOrders as |order|}}
+                <div class="order-card status-{{order.status}}">
+                  <div class="order-card-header">
+                    <div class="order-product-thumb">
+                      {{#if order.product.image_url}}
+                        <img
+                          src={{order.product.image_url}}
+                          alt={{order.product.name}}
+                        />
+                      {{else if (eq order.display_product_type "physical")}}
+                        {{dIcon "box"}}
+                      {{else}}
+                        {{dIcon "bolt"}}
+                      {{/if}}
                     </div>
 
-                    <div class="order-meta">
-                      <span class="order-cost">
-                        {{i18n
-                          "points_mall.shop.cost"
-                          points=order.points_spent
-                        }}
-                      </span>
+                    <div class="order-header-info">
+                      <div class="order-title-row">
+                        <h3>{{order.product.name}}</h3>
+                        <span class="order-id-tag">#{{order.id}}</span>
+                      </div>
+                      <div class="order-meta-chips">
+                        <span
+                          class="order-product-type type-{{order.display_product_type}}"
+                        >
+                          {{i18n
+                            (concat
+                              "points_mall.orders.types."
+                              order.display_product_type
+                            )
+                          }}
+                        </span>
+                        <span class="order-cost">
+                          {{order.points_spent}} pts
+                        </span>
+                        <span class="order-date">
+                          {{dIcon "clock"}} {{formatDateFixed order.created_at}}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="order-status-badge-wrap">
                       <span class="order-status status-{{order.status}}">
                         {{i18n
                           (concat "points_mall.orders.status." order.status)
                         }}
                       </span>
-                      <span class="order-date">{{dFormatDate
-                          order.created_at
-                        }}</span>
                     </div>
-
-                    {{#if order.shipping_info}}
-                      <div class="order-shipping">
-                        <strong>{{i18n
-                            "points_mall.orders.shipping_info"
-                          }}:</strong>
-                        <p>{{order.shipping_info}}</p>
-                      </div>
-                    {{/if}}
-
-                    {{#if order.notes}}
-                      <div class="order-notes">
-                        <strong>{{i18n "points_mall.orders.notes"}}:</strong>
-                        <p>{{order.notes}}</p>
-                      </div>
-                    {{/if}}
                   </div>
+
+                  {{! LINHA DO TEMPO GRÁFICA DE STATUS (STEPPER) }}
+                  <div class="order-stepper-wrap">
+                    <div class="order-stepper">
+                      {{! Step 1: Recebido }}
+                      <div class="stepper-step step-done">
+                        <div class="stepper-circle">
+                          {{dIcon "check"}}
+                        </div>
+                        <span class="stepper-label">Pedido Recebido</span>
+                      </div>
+                      <div class="stepper-line {{if (or (eq order.status "pending") (eq order.status "shipped") (eq order.status "completed") (eq order.status "refunded")) "line-active"}}"></div>
+
+                      {{! Step 2: Em Processamento / Enviado }}
+                      <div class="stepper-step {{if (or (eq order.status "shipped") (eq order.status "completed")) "step-done" (if (eq order.status "pending") "step-current" "")}}">
+                        <div class="stepper-circle">
+                          {{#if (or (eq order.status "shipped") (eq order.status "completed"))}}
+                            {{dIcon "check"}}
+                          {{else if (eq order.status "pending")}}
+                            {{dIcon "hourglass-half"}}
+                          {{else if (eq order.status "refunded")}}
+                            {{dIcon "rotate-left"}}
+                          {{else}}
+                            {{dIcon "circle"}}
+                          {{/if}}
+                        </div>
+                        <span class="stepper-label">
+                          {{if (eq order.status "shipped") "Enviado" (if (eq order.status "refunded") "Estornado" "Processando")}}
+                        </span>
+                      </div>
+                      <div class="stepper-line {{if (or (eq order.status "completed") (eq order.status "refunded")) "line-active"}}"></div>
+
+                      {{! Step 3: Concluído / Reembolsado }}
+                      <div class="stepper-step {{if (eq order.status "completed") "step-done" (if (eq order.status "refunded") "step-refunded" (if (eq order.status "canceled") "step-canceled" ""))}}">
+                        <div class="stepper-circle">
+                          {{#if (eq order.status "completed")}}
+                            {{dIcon "circle-check"}}
+                          {{else if (eq order.status "refunded")}}
+                            {{dIcon "arrow-rotate-left"}}
+                          {{else if (eq order.status "canceled")}}
+                            {{dIcon "xmark"}}
+                          {{else}}
+                            {{dIcon "circle"}}
+                          {{/if}}
+                        </div>
+                        <span class="stepper-label">
+                          {{if (eq order.status "completed") "Entregue & Concluído" (if (eq order.status "refunded") "Reembolsado" (if (eq order.status "canceled") "Cancelado" "Conclusão"))}}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {{! DETALHES DE ENTREGA & BOTÃO DE COPIAR COM 1 CLIQUE }}
+                  {{#if (or order.shipping_info order.notes)}}
+                    <div class="order-details-card">
+                      {{#if order.shipping_info}}
+                        <div class="order-detail-block">
+                          <strong>{{dIcon "location-dot"}} {{i18n "points_mall.orders.shipping_info"}}:</strong>
+                          <p>{{order.shipping_info}}</p>
+                        </div>
+                      {{/if}}
+
+                      {{#if order.notes}}
+                        <div class="order-detail-block">
+                          <strong>{{dIcon "clipboard-list"}} {{i18n "points_mall.orders.notes"}}:</strong>
+                          <p>{{order.notes}}</p>
+                        </div>
+                      {{/if}}
+
+                      <div class="order-copy-action">
+                        <button
+                          type="button"
+                          class="btn btn-default btn-copy-details {{if (eq @controller.copiedOrderId order.id) "copied"}}"
+                          {{on "click" (fn @controller.copyOrderDetails order)}}
+                        >
+                          {{#if (eq @controller.copiedOrderId order.id)}}
+                            {{dIcon "check"}} <span>Copiado!</span>
+                          {{else}}
+                            {{dIcon "copy"}} <span>Copiar Dados de Entrega</span>
+                          {{/if}}
+                        </button>
+                      </div>
+                    </div>
+                  {{/if}}
                 </div>
               {{/each}}
             </div>
+
+            {{#if @controller.hasMultipleOrderPages}}
+              <div class="orders-pagination">
+                <button
+                  type="button"
+                  class="btn btn-default btn-pagination-prev"
+                  disabled={{not @controller.canPrevOrdersPage}}
+                  {{on "click" @controller.prevOrdersPage}}
+                >
+                  {{dIcon "chevron-left"}} <span>Anterior</span>
+                </button>
+
+                <div class="pagination-info">
+                  Página <strong>{{@controller.ordersPage}}</strong> de <strong>{{@controller.ordersTotalPages}}</strong>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn btn-default btn-pagination-next"
+                  disabled={{not @controller.canNextOrdersPage}}
+                  {{on "click" @controller.nextOrdersPage}}
+                >
+                  <span>Próxima</span> {{dIcon "chevron-right"}}
+                </button>
+              </div>
+            {{/if}}
           {{else}}
             <div class="empty-state orders-empty">
               <div class="orders-empty-icon">{{dIcon "box"}}</div>
@@ -1333,7 +1319,7 @@ export default <template>
 
           {{#if @controller.hasLedgerEvents}}
             <div class="ledger-event-list">
-              {{#each @controller.filteredLedgerEvents as |event|}}
+              {{#each @controller.paginatedLedgerEvents as |event|}}
                 <article class="ledger-event-item">
                   <div class="ledger-event-main">
                     <span class="ledger-event-mark {{event.direction}}">
@@ -1345,17 +1331,43 @@ export default <template>
                     </span>
                     <div>
                       <strong>{{event.description}}</strong>
-                      <p>{{dFormatDate event.created_at}}</p>
+                      <p>{{formatDateFixed event.created_at}}</p>
                     </div>
                   </div>
                   <strong class="ledger-event-points {{event.direction}}">
                     {{#if
                       (eq event.direction "income")
-                    }}+{{/if}}{{event.points}}
+                    }}+{{/if}}{{event.points}} pts
                   </strong>
                 </article>
               {{/each}}
             </div>
+
+            {{#if (gt @controller.totalLedgerPages 1)}}
+              <div class="ledger-pagination">
+                <button
+                  type="button"
+                  class="btn btn-default btn-small"
+                  disabled={{eq @controller.ledgerPage 1}}
+                  {{on "click" @controller.prevLedgerPage}}
+                >
+                  {{dIcon "chevron-left"}} Anterior
+                </button>
+
+                <span class="ledger-page-indicator">
+                  Página {{@controller.ledgerPage}} de {{@controller.totalLedgerPages}}
+                </span>
+
+                <button
+                  type="button"
+                  class="btn btn-default btn-small"
+                  disabled={{eq @controller.ledgerPage @controller.totalLedgerPages}}
+                  {{on "click" @controller.nextLedgerPage}}
+                >
+                  Próxima {{dIcon "chevron-right"}}
+                </button>
+              </div>
+            {{/if}}
           {{else}}
             <div class="ledger-empty">
               {{i18n "points_mall.points.empty"}}

@@ -10,21 +10,21 @@ module DiscoursePointsMall
     SCORABLE_LOOKBACK_DAYS = 90
 
     SCORABLE_LABELS = {
-      "post_created" => "发布回复",
-      "topic_created" => "发布主题",
-      "like_received" => "获得点赞",
-      "like_given" => "送出点赞",
-      "day_visited" => "每日访问",
-      "post_read" => "阅读帖子",
-      "time_read" => "阅读时长",
-      "solutions" => "最佳答案",
-      "flag_created" => "有效举报",
-      "user_invited" => "邀请用户",
-      "chat_message_created" => "聊天消息",
-      "chat_reaction_given" => "聊天送出表情",
-      "chat_reaction_received" => "聊天获得表情",
-      "reaction_given" => "送出表情",
-      "reaction_received" => "获得表情",
+      "post_created" => "Publicou resposta",
+      "topic_created" => "Criou tópico",
+      "like_received" => "Recebeu curtida",
+      "like_given" => "Deu curtida",
+      "day_visited" => "Acesso diário",
+      "post_read" => "Leu postagem",
+      "time_read" => "Tempo de leitura",
+      "solutions" => "Solução aceita",
+      "flag_created" => "Sinalização aceita",
+      "user_invited" => "Convidou usuário",
+      "chat_message_created" => "Mensagem no chat",
+      "chat_reaction_given" => "Reação dada no chat",
+      "chat_reaction_received" => "Reação recebida no chat",
+      "reaction_given" => "Deu reação",
+      "reaction_received" => "Recebeu reação",
     }.freeze
 
     def ledger
@@ -135,19 +135,34 @@ module DiscoursePointsMall
         date: event.date,
         created_at: event.created_at,
         points: points,
-        description: event.description.presence || I18n.t("points_mall.points.unknown_description"),
+        description: translate_description(event.description.presence || I18n.t("points_mall.points.unknown_description")),
         category: category,
         direction: points.negative? ? "expense" : "income",
       }
     end
 
+    def translate_description(description)
+      text = description.to_s.strip
+      return "Check-in Diário" if text.include?("每日签到") || text.include?("签到奖励") || text == "签到"
+      return "Recuperação de Check-in" if text.include?("补签卡") || text == "补签"
+      return "Compra de Cartão de Check-in" if text.include?("积分商城购买补签卡")
+      return "Resgate de Tráfego / Nuvem" if text.include?("积分商城兑换网盘流量")
+      return "Resgate de Cosmético / Insígnia" if text.include?("积分商城兑换身份装饰")
+      return "Compra na Loja de Pontos" if text.include?("积分商城兑换商品") || text.include?("购买商品")
+      return "Envio de Megafone" if text.include?("小喇叭发言") || text == "小喇叭"
+      return "Publicou resposta" if text == "发布回复"
+      return "Criou tópico" if text == "发布主题"
+      return "Recebeu curtida" if text == "获得点赞"
+      return "Deu curtida" if text == "送出点赞"
+      return "Acesso diário" if text == "每日访问"
+      text
+    end
+
     def event_category(description)
       text = description.to_s.downcase
-
       return "checkin" if text.include?("签到") || text.include?("check-in") || text.include?("checkin") || text.include?("每日")
-      return "shop" if text.include?("商城") || text.include?("兑换商品") || text.include?("补签卡")
-      return "community" if text.include?("社区") || text.include?("topic") || text.include?("reply") || text.include?("like") || text.include?("点赞")
-
+      return "shop" if text.include?("商城") || text.include?("兑换商品") || text.include?("补签卡") || text.include?("loja") || text.include?("compra")
+      return "community" if text.include?("社区") || text.include?("topic") || text.include?("reply") || text.include?("like") || text.include?("点赞") || text.include?("resposta") || text.include?("tópico")
       "other"
     end
   end

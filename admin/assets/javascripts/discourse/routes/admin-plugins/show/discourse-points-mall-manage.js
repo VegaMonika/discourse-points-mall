@@ -15,6 +15,10 @@ function defaultProduct() {
     badge_text: "",
     image_url: "",
     enabled: true,
+    price_brl: "",
+    external_url: "",
+    grant_group_id: "",
+    grant_duration_days: "",
     sort_order: 0,
   });
 }
@@ -69,6 +73,7 @@ export default class AdminPluginsShowDiscoursePointsMallManage extends Discourse
     return {
       products,
       orders,
+      groups: productsRes.groups || [],
       checkinSummary,
       checkinTrend,
       checkinTopUsers,

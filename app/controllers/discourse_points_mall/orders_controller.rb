@@ -195,7 +195,7 @@ module DiscoursePointsMall
           unless DiscoursePointsMall::PointsManager.add_points!(
                    user: locked_user,
                    points: -price,
-                   description: "积分商城兑换网盘流量",
+                   description: "Resgate de Tráfego / Nuvem",
                  )
             error = I18n.t("points_mall.errors.points_update_failed")
             raise ActiveRecord::Rollback
@@ -237,7 +237,7 @@ module DiscoursePointsMall
           unless DiscoursePointsMall::PointsManager.add_points!(
                    user: locked_user,
                    points: -price,
-                   description: "积分商城兑换身份装饰",
+                   description: "Resgate de Cosmético / Insígnia",
                  )
             error = I18n.t("points_mall.errors.points_update_failed")
             raise ActiveRecord::Rollback
@@ -266,19 +266,35 @@ module DiscoursePointsMall
           raise ActiveRecord::Rollback
         end
 
+        status = "pending"
+        notes = nil
+
+        if product.respond_to?(:grant_group_id) && product.grant_group_id.present?
+          group = ::Group.find_by(id: product.grant_group_id)
+          if group
+            duration_days = product.respond_to?(:grant_duration_days) ? product.grant_duration_days.to_i : 0
+            expires_at = duration_days > 0 ? duration_days.days.from_now : nil
+            group.add(locked_user)
+            status = "completed"
+            expiry_str = expires_at ? expires_at.strftime("%d/%m/%Y") : "tempo indeterminado"
+            notes = "VIP concedido: Grupo '#{group.name}' (#{duration_days > 0 ? "#{duration_days} dias - até #{expiry_str}" : 'permanente'})"
+          end
+        end
+
         order =
           ::PointsMallOrder.create!(
             user_id: locked_user.id,
             product_id: product.id,
             points_spent: product.points_cost,
-            status: "pending",
+            status: status,
+            notes: notes,
             shipping_info: shipping_info.presence,
           )
 
         unless DiscoursePointsMall::PointsManager.add_points!(
                  user: locked_user,
                  points: -product.points_cost,
-                 description: "积分商城兑换商品",
+                 description: "Compra na Loja de Pontos",
                )
           error = I18n.t("points_mall.errors.points_update_failed")
           raise ActiveRecord::Rollback

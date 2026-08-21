@@ -3,7 +3,7 @@ import DiscourseRoute from "discourse/routes/discourse";
 export default class PointsMallOrdersRoute extends DiscourseRoute {
   async model() {
     try {
-      const response = await fetch("/points-mall/orders.json");
+      const response = await fetch("/loja/pedidos.json");
       const data = await response.json();
       return data;
     } catch (error) {

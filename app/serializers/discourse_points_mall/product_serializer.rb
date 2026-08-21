@@ -14,6 +14,8 @@ module DiscoursePointsMall
                :badge_text,
                :image_url,
                :enabled,
+               :price_brl,
+               :external_url,
                :product_key,
                :is_makeup_card,
                :created_at

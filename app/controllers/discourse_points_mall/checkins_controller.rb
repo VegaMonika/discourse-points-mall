@@ -294,59 +294,98 @@ module DiscoursePointsMall
     end
 
     def ranking_payload(_current_points = nil)
-      return { my_rank: nil, my_score: 0, total_users: 0, top_users: [] } unless defined?(::DiscourseGamification::GamificationLeaderboard)
+      top_users = []
+      my_rank = nil
+      my_score = 0
+      total_users = 0
 
-      leaderboard = nil
-      leaderboard = ::DiscourseGamification::GamificationLeaderboard.find_by(id: PREFERRED_LEADERBOARD_ID)
-      if leaderboard.blank?
-        Rails.logger.warn("[points-mall] leaderboard ##{PREFERRED_LEADERBOARD_ID} not found")
-        return { my_rank: nil, my_score: 0, total_users: 0, top_users: [] }
-      end
-      if guardian.respond_to?(:can_see_leaderboard?) && !guardian.can_see_leaderboard?(leaderboard)
-        return { my_rank: nil, my_score: 0, total_users: 0, top_users: [] }
-      end
+      if defined?(::DiscourseGamification::GamificationLeaderboard)
+        leaderboard = ::DiscourseGamification::GamificationLeaderboard.find_by(id: PREFERRED_LEADERBOARD_ID) ||
+                      ::DiscourseGamification::GamificationLeaderboard.first
 
-      period = leaderboard.resolve_period(nil)
-      rows =
-        ::DiscourseGamification::GamificationLeaderboard.scores_for(
-          leaderboard.id,
-          period: period,
-          user_limit: RANKING_LIMIT,
-        )
+        if leaderboard.present? && (!guardian.respond_to?(:can_see_leaderboard?) || guardian.can_see_leaderboard?(leaderboard))
+          period = leaderboard.resolve_period(nil)
+          begin
+            rows = ::DiscourseGamification::GamificationLeaderboard.scores_for(
+              leaderboard.id,
+              period: period,
+              user_limit: RANKING_LIMIT,
+            )
 
-      my_row =
-        ::DiscourseGamification::GamificationLeaderboard.find_position_by(
-          leaderboard_id: leaderboard.id,
-          for_user_id: current_user.id,
-          period: period,
-        )
+            my_row = ::DiscourseGamification::GamificationLeaderboard.find_position_by(
+              leaderboard_id: leaderboard.id,
+              for_user_id: current_user.id,
+              period: period,
+            )
 
-      user_levels = ::User.where(id: rows.map(&:id)).pluck(:id, :trust_level).to_h
-      top_users =
-        rows.map do |row|
-          points = row.total_score.to_i
-          {
-            rank: row.position.to_i,
-            user_id: row.id.to_i,
-            username: row.username,
-            avatar_template: row.avatar_template,
-            points: points,
-            level_name: trust_level_name(user_levels[row.id].to_i),
-          }
+            if rows.present?
+              user_levels = ::User.where(id: rows.map(&:id)).pluck(:id, :trust_level).to_h
+              top_users = rows.map do |row|
+                {
+                  rank: row.position.to_i,
+                  user_id: row.id.to_i,
+                  username: row.username,
+                  avatar_template: row.avatar_template,
+                  points: row.total_score.to_i,
+                  level_name: trust_level_name(user_levels[row.id].to_i),
+                }
+              end
+              my_rank = my_row&.position&.to_i
+              my_score = my_row&.total_score.to_i
+              total_users = [rows.length, my_rank].compact.max.to_i
+            end
+          rescue ::DiscourseGamification::LeaderboardCachedView::NotReadyError
+            Jobs.enqueue(Jobs::GenerateLeaderboardPositions, leaderboard_id: leaderboard.id) if leaderboard
+          rescue StandardError => e
+            Rails.logger.warn("[points-mall] gamification ranking failed: #{e.class} #{e.message}")
+          end
         end
+      end
+
+      # Fallback if gamification leaderboard is absent or returned no users
+      if top_users.empty?
+        begin
+          if using_daily_checkin? && defined?(::DiscourseDailyCheckin::Checkin)
+            user_scores = ::DiscourseDailyCheckin::Checkin.group(:user_id).sum(:points)
+          else
+            user_scores = ::PointsMallCheckin.group(:user_id).sum(:points_earned)
+          end
+
+          if user_scores.present?
+            sorted = user_scores.sort_by { |_, pts| -pts }
+            top_pairs = sorted.take(RANKING_LIMIT)
+            user_ids = top_pairs.map(&:first)
+            users_map = ::User.where(id: user_ids).index_by(&:id)
+
+            top_users = top_pairs.each_with_index.map do |(uid, score), index|
+              u = users_map[uid]
+              next unless u
+              {
+                rank: index + 1,
+                user_id: u.id,
+                username: u.username,
+                avatar_template: u.avatar_template,
+                points: score.to_i,
+                level_name: trust_level_name(u.trust_level),
+              }
+            end.compact
+
+            my_score = user_scores[current_user.id].to_i
+            rank_idx = sorted.index { |uid, _| uid == current_user.id }
+            my_rank = rank_idx ? rank_idx + 1 : nil
+            total_users = user_scores.keys.length
+          end
+        rescue StandardError => e
+          Rails.logger.warn("[points-mall] fallback checkin ranking failed: #{e.class} #{e.message}")
+        end
+      end
 
       {
-        my_rank: my_row&.position&.to_i,
-        my_score: my_row&.total_score.to_i,
-        total_users: [rows.length, my_row&.position.to_i].compact.max.to_i,
+        my_rank: my_rank,
+        my_score: my_score,
+        total_users: total_users,
         top_users: top_users,
       }
-    rescue ::DiscourseGamification::LeaderboardCachedView::NotReadyError
-      Jobs.enqueue(Jobs::GenerateLeaderboardPositions, leaderboard_id: leaderboard.id) if leaderboard
-      { my_rank: nil, my_score: 0, total_users: 0, top_users: [] }
-    rescue StandardError => e
-      Rails.logger.warn("[points-mall] ranking payload failed: #{e.class} #{e.message}")
-      { my_rank: nil, my_score: 0, total_users: 0, top_users: [] }
     end
 
     def default_makeup_card_status
@@ -594,7 +633,7 @@ module DiscoursePointsMall
       DiscoursePointsMall::PointsManager.add_points!(
         user: current_user,
         points: total_points,
-        description: (SiteSetting.respond_to?(:daily_checkin_score_description) ? SiteSetting.daily_checkin_score_description : "每日签到"),
+        description: (SiteSetting.respond_to?(:daily_checkin_score_description) && SiteSetting.daily_checkin_score_description.present? ? SiteSetting.daily_checkin_score_description : "Check-in Diário"),
       )
 
       render json: {

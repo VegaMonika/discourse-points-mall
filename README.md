@@ -1,107 +1,107 @@
-# Discourse Points Mall Plugin
+# Plugin Discourse Loja de Pontos
 
-A comprehensive points mall plugin for Discourse that integrates with discourse-gamification. Points earned through community activity (posts, replies, likes, daily visits) and check-ins can be spent on virtual cosmetics or physical products.
+Plugin completo de loja de pontos para Discourse, integrado ao discourse-gamification. Pontos ganhos por atividade na comunidade (posts, respostas, curtidas, visitas diárias) e check-ins podem ser trocados por cosméticos virtuais ou produtos físicos.
 
-## Features
+## Funcionalidades
 
-### 1. Daily Check-in (签到)
-- Users check in daily to earn points
-- Consecutive check-in streaks earn bonus points
-- Monthly check-in calendar, history and ranking
-- Makeup cards to backfill missed days (up to 3 per month, tiered pricing, monthly reset)
+### 1. Check-in Diário (签到)
+- Check-in diário para ganhar pontos
+- Sequências consecutivas ganham bônus
+- Calendário mensal, histórico e ranking
+- Cards de reposição para repor dias perdidos (máx. 3/mês, preço escalonado, reset mensal)
 
-### 2. Points Shop (积分商店)
-- Exchange points for virtual cosmetics or physical products
-- Product categories, featured products and storefront sections
-- Stock management and order tracking
-- Built-in makeup card product with tiered pricing (1000 / 3000 / 5000, configurable)
+### 2. Loja de Pontos (积分商店)
+- Troque pontos por cosméticos virtuais ou produtos físicos
+- Categorias, destaques e prateleiras na vitrine
+- Controle de estoque e acompanhamento de pedidos
+- Card de reposição integrado com preço escalonado (1000 / 3000 / 5000, configurável)
 
-### 3. Inventory (背包)
-- Virtual cosmetics live in the user's inventory and can be equipped / unequipped:
-  - Custom title (头衔)
-  - Avatar frame (头像框)
-  - Card border (卡片边框)
-  - Profile background (主页背景)
-  - Post signature (帖子签名)
-  - SVIP glow (SVIP 光效)
-  - Theme skin (主题皮肤)
-- Time-limited cosmetics expire automatically via a daily scheduled job
+### 3. Inventário (背包)
+- Cosméticos virtuais ficam no inventário e podem ser equipados/desequipados:
+  - Título personalizado (头衔)
+  - Moldura de avatar (头像框)
+  - Borda de card (卡片边框)
+  - Fundo de perfil (主页背景)
+  - Assinatura de post (帖子签名)
+  - Brilho SVIP (SVIP 光效)
+  - Skin de tema (主题皮肤)
+- Cosméticos com prazo expiram automaticamente via job diário
 
-### 4. Orders & Addresses (订单与地址)
-- Order history with status tracking
-- Shipping address book for physical products
+### 4. Pedidos e Endereços (订单与地址)
+- Histórico de pedidos com status
+- Caderno de endereços para produtos físicos
 
-### 5. Points Ledger (积分明细)
-- Every points income and expense in one timeline
-- Includes automatic community points from discourse-gamification scorables
-  (posts, replies, likes received/given, daily visits, etc. — last 90 days)
-- Filter by income / expense / check-in / shop / community
+### 5. Extrato de Pontos (积分明细)
+- Todas as entradas e saídas em uma linha do tempo
+- Inclui pontos automáticos da comunidade via discourse-gamification
+  (posts, respostas, curtidas recebidas/dadas, visitas diárias, etc. — últimos 90 dias)
+- Filtro por entradas / saídas / check-in / loja / comunidade
 
-### 6. Admin Panel (管理后台)
-- Manage products (create / edit / delete, stock, categories, storefront fields)
-- Review and update orders
-- Browse check-in records
-- Configure makeup card pricing tiers
+### 6. Painel Admin (管理后台)
+- Gerenciar produtos (criar / editar / excluir, estoque, categorias, campos da vitrine)
+- Revisar e atualizar pedidos
+- Consultar registros de check-in
+- Configurar preços escalonados do card de reposição
 
-## Installation
+## Instalação
 
-1. Add the plugin to your Discourse installation:
+1. Adicione o plugin à sua instalação Discourse:
 ```bash
 cd /var/discourse
-git clone https://github.com/VegaMonika/discourse-points-mall.git plugins/discourse-points-mall
+git clone https://github.com/Segreverso/discourse-points-segredin.git plugins/discourse-points-*
 ```
 
-2. Rebuild your Discourse container:
+2. Reconstrua o container:
 ```bash
 ./launcher rebuild app
 ```
 
-## Configuration
+## Configuração
 
-Enable the plugin in Admin > Settings > Plugins > discourse-points-mall
+Ative o plugin em Admin > Configurações > Plugins > discourse-points-mall
 
-Available settings:
+Configurações disponíveis:
 
-| Setting | Default | Description |
+| Configuração | Padrão | Descrição |
 | --- | --- | --- |
-| `points_mall_enabled` | `true` | Enable/disable the plugin |
-| `points_mall_checkin_points` | `10` | Points awarded for daily check-in |
-| `points_mall_checkin_streak_bonus` | `5` | Bonus points for consecutive check-ins |
-| `points_mall_makeup_price_tier_1` | `1000` | Price of the 1st makeup card each month |
-| `points_mall_makeup_price_tier_2` | `3000` | Price of the 2nd makeup card each month |
-| `points_mall_makeup_price_tier_3` | `5000` | Price of the 3rd makeup card each month |
+| `points_mall_enabled` | `true` | Ativar/desativar o plugin |
+| `points_mall_checkin_points` | `10` | Pontos por check-in diário |
+| `points_mall_checkin_streak_bonus` | `5` | Bônus por check-ins consecutivos |
+| `points_mall_makeup_price_tier_1` | `1000` | Preço do 1º card de reposição no mês |
+| `points_mall_makeup_price_tier_2` | `3000` | Preço do 2º card de reposição no mês |
+| `points_mall_makeup_price_tier_3` | `5000` | Preço do 3º card de reposição no mês |
 
-## Requirements
+## Requisitos
 
-- Discourse 2.7.0 or higher
-- [discourse-gamification](https://github.com/discourse/discourse-gamification) plugin (points backend)
+- Discourse 2.7.0 ou superior
+- Plugin [discourse-gamification](https://github.com/discourse/discourse-gamification) (backend de pontos)
 
-The plugin supports both the current gamification API (`GamificationLeaderboardScore`)
-and the legacy one (`GamificationScore`); the user's balance is read live from the
-first leaderboard, so it always matches the leaderboard totals.
+O plugin suporta tanto a API atual do gamification (`GamificationLeaderboardScore`)
+quanto a legada (`GamificationScore`); o saldo do usuário é lido ao vivo do
+primeiro leaderboard, sempre correspondendo aos totais.
 
-## Usage
+## Uso
 
-After installation, users can access the Points Mall at `/points-mall`. The mall includes:
+Após a instalação, acesse a Loja de Pontos em `/points-mall`. A loja inclui:
 
-- **Check-in** (签到): daily check-in with streak tracking and calendar
-- **Shop** (商店): browse and purchase products with points
-- **Inventory** (背包): equip / unequip owned cosmetics
-- **Orders** (我的订单): order history and shipping addresses
-- **Ledger** (积分明细): full income / expense timeline
+- **Check-in** (签到): check-in diário com sequência e calendário
+- **Loja** (商店): navegue e compre produtos com pontos
+- **Inventário** (背包): equipe/desequipe cosméticos
+- **Pedidos** (我的订单): histórico e endereços de envio
+- **Extrato** (积分明细): linha do tempo de entradas/saídas
 
-## Database Schema
+## Esquema do Banco
 
-The plugin creates the following tables:
+O plugin cria as seguintes tabelas:
 
-- `points_mall_products` — product catalog (categories, storefront fields, stock)
-- `points_mall_orders` — user orders
-- `points_mall_checkins` — check-in records
-- `points_mall_addresses` — shipping addresses
-- `points_mall_makeup_cards` — monthly makeup card purchase/usage status
+- `points_mall_products` — catálogo de produtos (categorias, campos da vitrine, estoque)
+- `points_mall_orders` — pedidos dos usuários
+- `points_mall_checkins` — registros de check-in
+- `points_mall_addresses` — endereços de envio
+- `points_mall_makeup_cards` — status mensal de compra/uso de cards de reposição
 
-Cosmetics and their expiry times are stored as user custom fields and cleaned up daily.
+Cosméticos e seus prazos de expiração são armazenados como campos personalizados do usuário e limpos diariamente.
 
-## License
+## Licença
 
-MIT License
+Licença MIT

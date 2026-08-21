@@ -40,7 +40,12 @@ export default class PointsMallController extends Controller {
   @tracked shopKeyword = "";
   @tracked shopSort = "featured";
   @tracked orderTypeFilter = "all";
+  @tracked ordersPage = 1;
+  @tracked ordersPerPage = 5;
   @tracked pointsFilter = "all";
+  @tracked ledgerPage = 1;
+  @tracked ledgerPerPage = 15;
+  @tracked copiedOrderId = null;
 
   updateCurrentUserPoints(delta) {
     const current = Number(this.currentUser?.points_balance || 0);
@@ -56,7 +61,6 @@ export default class PointsMallController extends Controller {
     return [
       { name: "checkin", icon: "calendar-check" },
       { name: "shop", icon: "gift" },
-      { name: "inventory", icon: "box" },
       { name: "orders", icon: "list" },
       { name: "ledger", icon: "wallet" },
     ];
@@ -336,6 +340,15 @@ export default class PointsMallController extends Controller {
     return this.filteredLedgerEvents.length > 0;
   }
 
+  get totalLedgerPages() {
+    return Math.ceil(this.filteredLedgerEvents.length / this.ledgerPerPage) || 1;
+  }
+
+  get paginatedLedgerEvents() {
+    const start = (this.ledgerPage - 1) * this.ledgerPerPage;
+    return this.filteredLedgerEvents.slice(start, start + this.ledgerPerPage);
+  }
+
   get orderTypeFilters() {
     return ["all", "physical", "virtual"];
   }
@@ -367,6 +380,41 @@ export default class PointsMallController extends Controller {
 
   get hasFilteredOrders() {
     return this.filteredOrders.length > 0;
+  }
+
+  get paginatedOrders() {
+    const start = (this.ordersPage - 1) * this.ordersPerPage;
+    return this.filteredOrders.slice(start, start + this.ordersPerPage);
+  }
+
+  get ordersTotalPages() {
+    return Math.ceil(this.filteredOrders.length / this.ordersPerPage) || 1;
+  }
+
+  get hasMultipleOrderPages() {
+    return this.ordersTotalPages > 1;
+  }
+
+  get canPrevOrdersPage() {
+    return this.ordersPage > 1;
+  }
+
+  get canNextOrdersPage() {
+    return this.ordersPage < this.ordersTotalPages;
+  }
+
+  @action
+  prevOrdersPage() {
+    if (this.canPrevOrdersPage) {
+      this.ordersPage--;
+    }
+  }
+
+  @action
+  nextOrdersPage() {
+    if (this.canNextOrdersPage) {
+      this.ordersPage++;
+    }
   }
 
   get inventoryItems() {
@@ -462,7 +510,7 @@ export default class PointsMallController extends Controller {
   @action
   async checkin() {
     try {
-      const result = await ajax("/points-mall/checkins", { type: "POST" });
+      const result = await ajax("/loja/checkin", { type: "POST" });
       const checkin = result.checkin || result;
       this.updateCurrentUserPoints(checkin.points_earned || 0);
       await this.reloadCheckinSummary();
@@ -482,11 +530,27 @@ export default class PointsMallController extends Controller {
   @action
   setOrderTypeFilter(filter) {
     this.orderTypeFilter = filter;
+    this.ordersPage = 1;
   }
 
   @action
   setPointsFilter(filter) {
     this.pointsFilter = filter;
+    this.ledgerPage = 1;
+  }
+
+  @action
+  prevLedgerPage() {
+    if (this.ledgerPage > 1) {
+      this.ledgerPage--;
+    }
+  }
+
+  @action
+  nextLedgerPage() {
+    if (this.ledgerPage < this.totalLedgerPages) {
+      this.ledgerPage++;
+    }
   }
 
   @action
@@ -496,7 +560,7 @@ export default class PointsMallController extends Controller {
     }
 
     try {
-      const result = await ajax("/points-mall/checkins/makeup", {
+      const result = await ajax("/loja/checkin/recuperar", {
         type: "POST",
         data: { checkin_date: day.date },
       });
@@ -655,7 +719,7 @@ export default class PointsMallController extends Controller {
         }
       }
 
-      const result = await ajax("/points-mall/orders", {
+      const result = await ajax("/loja/pedidos", {
         type: "POST",
         data,
       });
@@ -766,7 +830,7 @@ export default class PointsMallController extends Controller {
       const payload = this.normalizeAddressPayload(this.addressEditorForm);
 
       if (this.editingAddressId) {
-        await ajax(`/points-mall/addresses/${this.editingAddressId}`, {
+        await ajax(`/loja/enderecos/${this.editingAddressId}`, {
           type: "PUT",
           data: payload,
         });
@@ -811,7 +875,7 @@ export default class PointsMallController extends Controller {
     }
 
     try {
-      await ajax(`/points-mall/addresses/${addressId}`, {
+      await ajax(`/loja/enderecos/${addressId}`, {
         type: "DELETE",
       });
       await this.reloadAddresses();
@@ -832,7 +896,7 @@ export default class PointsMallController extends Controller {
   @action
   async setDefaultAddress(addressId) {
     try {
-      await ajax(`/points-mall/addresses/${addressId}`, {
+      await ajax(`/loja/enderecos/${addressId}`, {
         type: "PUT",
         data: { is_default: true },
       });
@@ -867,59 +931,57 @@ export default class PointsMallController extends Controller {
   }
 
   async reloadAddresses() {
-    const result = await ajax("/points-mall/addresses");
+    const result = await ajax("/loja/enderecos");
     this.model.addresses = result.addresses || [];
     this.notifyPropertyChange("model");
     return this.model.addresses;
   }
 
   async reloadCheckinSummary() {
-    const result = await ajax("/points-mall/checkins/summary");
+    const result = await ajax("/loja/checkin/resumo");
     this.model.checkins = result.checkins || [];
     this.model.summary = result.summary || {};
     this.notifyPropertyChange("model");
   }
 
   async reloadProducts() {
-    const result = await ajax("/points-mall/products");
+    const result = await ajax("/loja/produtos");
     this.model.products = result.products || [];
     this.notifyPropertyChange("model");
   }
 
   async reloadLedger() {
-    const result = await ajax("/points-mall/points/ledger");
+    const result = await ajax("/loja/extrato");
     this.model.ledgerSummary = result.summary || {};
     this.model.ledgerEvents = result.events || [];
     this.notifyPropertyChange("model");
   }
 
   async reloadInventory() {
-    const result = await ajax("/points-mall/inventory");
+    const result = await ajax("/loja/inventario");
     this.model.inventory = result.inventory || { items: [], equipped: {} };
     this.notifyPropertyChange("model");
   }
 
   @action
-  async equipInventoryItem(item) {
-    if (!item?.order_id || item.expired || !item.equippable) {
-      return;
-    }
+  copyOrderDetails(order) {
+    if (!order) return;
+    const parts = [
+      `Pedido #${order.id} - ${order.product?.name || 'Produto'}`,
+      order.shipping_info ? `Endereço/Dados: ${order.shipping_info}` : null,
+      order.notes ? `Observações/Entrega: ${order.notes}` : null,
+    ].filter(Boolean);
 
-    try {
-      const result = await ajax("/points-mall/inventory/equip", {
-        type: "POST",
-        data: { order_id: item.order_id },
-      });
-      this.model.inventory = result.inventory || { items: [], equipped: {} };
-      this.broadcastCosmeticsUpdated(this.model.inventory);
-      this.notifyPropertyChange("model");
+    const textToCopy = parts.join("\n");
+    if (!textToCopy) return;
 
-      this.appEvents.trigger("modal-body:flash", {
-        text: I18n.t("points_mall.inventory.equip_success"),
-        messageClass: "success",
-      });
-    } catch (error) {
-      popupAjaxError(error);
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        this.copiedOrderId = order.id;
+        setTimeout(() => {
+          this.copiedOrderId = null;
+        }, 3000);
+      }).catch(() => {});
     }
   }
 
@@ -930,7 +992,7 @@ export default class PointsMallController extends Controller {
     }
 
     try {
-      const result = await ajax("/points-mall/inventory/unequip", {
+      const result = await ajax("/loja/inventario/desequipar", {
         type: "POST",
         data: { kind },
       });
@@ -977,7 +1039,7 @@ export default class PointsMallController extends Controller {
       return null;
     }
 
-    const result = await ajax("/points-mall/addresses", {
+    const result = await ajax("/loja/enderecos", {
       type: "POST",
       data: payload,
     });

@@ -26,8 +26,8 @@ module DiscoursePointsMall
 
     def create
       message = params[:message].to_s.strip
-      return render_json_error("内容不能为空") if message.blank?
-      return render_json_error("内容过长（最多 #{MAX_LEN} 字）") if message.length > MAX_LEN
+      return render_json_error("O conteúdo não pode estar em branco") if message.blank?
+      return render_json_error("Conteúdo muito longo (máximo #{MAX_LEN} caracteres)") if message.length > MAX_LEN
 
       # 颜色仅 SVIP 可用，且必须是合法十六进制
       color = params[:color].to_s.strip
@@ -36,14 +36,14 @@ module DiscoursePointsMall
       cost = shout_cost
       if cost.positive?
         balance = current_user.points_balance.to_i
-        return render_json_error("积分不足，发言需要 #{cost} 积分") if balance < cost
+        return render_json_error("Pontos insuficientes, o envio requer #{cost} pontos") if balance < cost
         ok =
           DiscoursePointsMall::PointsManager.add_points!(
             user: current_user,
             points: -cost,
-            description: "小喇叭发言",
+            description: "Envio de Megafone",
           )
-        return render_json_error("扣分失败，请稍后再试") unless ok
+        return render_json_error("Erro ao deduzir pontos, tente novamente") unless ok
       end
 
       shout =
@@ -59,10 +59,10 @@ module DiscoursePointsMall
 
     def destroy
       shout = PointsMallShout.find_by(id: params[:id])
-      return render_json_error("留言不存在", status: 404) if shout.nil?
+      return render_json_error("Mensagem não encontrada", status: 404) if shout.nil?
 
       unless shout.user_id == current_user.id || current_user.staff?
-        return render_json_error("无权删除", status: 403)
+        return render_json_error("Sem permissão para excluir", status: 403)
       end
 
       # 删除不退积分
@@ -85,10 +85,10 @@ module DiscoursePointsMall
 
       ::PostCreator.create!(
         Discourse.system_user,
-        title: "📢 小喇叭里有人提到了你",
+        title: "📢 Você foi mencionado em um anúncio",
         raw:
-          "@#{sender.username} 在首页小喇叭提到了你：\n\n> #{message}\n\n" \
-            "[点我回首页看小喇叭](#{Discourse.base_url}/)",
+          "@#{sender.username} mencionou você no megafone da comunidade:\n\n> #{message}\n\n" \
+            "[Clique aqui para acessar](#{Discourse.base_url}/)",
         archetype: Archetype.private_message,
         target_usernames: users.map(&:username).join(","),
         skip_validations: true,

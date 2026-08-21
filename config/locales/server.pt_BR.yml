@@ -1,0 +1,44 @@
+pt_BR:
+  site_settings:
+    points_mall_enabled: "Ativar plugin Loja de Pontos"
+    points_mall_checkin_points: "Pontos por check-in diário"
+    points_mall_checkin_streak_bonus: "Bônus por check-ins consecutivos"
+    points_mall_makeup_price_tier_1: "Preço do card de reposição (1ª compra)"
+    points_mall_makeup_price_tier_2: "Preço do card de reposição (2ª compra)"
+    points_mall_makeup_price_tier_3: "Preço do card de reposição (3ª compra)"
+  points_mall:
+    levels:
+      lv1: "Nível 1 · Jujuba"
+      lv2: "Nível 2 · Brigadeiro"
+      lv3: "Nível 3 · Pipoca Doce"
+      lv4: "Nível 4 · Beijinho"
+    checkin:
+      requirements_progress: "%{met}/%{total} requisitos de promoção concluídos"
+      tl4_manual_requirement: "TL4 (Líder) é concedido manualmente pela equipe"
+      max_level: "Nível máximo atingido"
+      trust_level_fallback: "Nível de Confiança TL%{level}"
+    admin:
+      title: "Loja de Pontos"
+      errors:
+        product_has_orders: "Este produto já possui pedidos e não pode ser excluído. Desative-o."
+        makeup_card_protected: "Card de reposição é um produto do sistema e não pode ser excluído."
+    errors:
+      insufficient_points: "Pontos insuficientes"
+      product_unavailable: "Produto indisponível"
+      shipping_info_required: "Dados de envio obrigatórios para produtos físicos"
+      invalid_address: "Endereço de envio inválido"
+      address_limit_reached: "Máximo de %{count} endereços de envio"
+      already_checked_in: "Já fez check-in hoje"
+      invalid_makeup_date: "Data de reposição inválida"
+      makeup_unavailable: "Reposição indisponível"
+      makeup_current_month_only: "Só é possível repor check-ins do mês atual"
+      makeup_past_days_only: "Só é possível repor dias passados"
+      no_makeup_card: "Nenhum card de reposição disponível. Compre um na loja primeiro"
+      date_already_checked_in: "Esta data já possui check-in"
+      makeup_failed: "Falha ao repor check-in. Tente novamente"
+      makeup_purchase_limit_reached: "Limite mensal de cards atingido"
+      unauthorized: "Você não tem permissão para esta ação"
+      points_update_failed: "Falha ao atualizar pontos, tente novamente"
+      order_create_failed: "Falha ao criar pedido"
+    points:
+      unknown_description: "Alteração de pontos"
