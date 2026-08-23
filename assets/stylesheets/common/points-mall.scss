@@ -469,7 +469,7 @@ img.jn-avatar-frame-chibi-compact {
   filter: drop-shadow(0 4px 8px rgba(56, 113, 217, 0.2));
 }
 
-.jn-avatar-frame-overlay-chibi-blue-heart {
+.jn-avatar-frame-overlay-image {
   animation: jn-avatar-frame-breathe 3.8s ease-in-out infinite;
 }
 
@@ -3195,7 +3195,7 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
         }
       }
 
-      &.product-cosmetic_avatar_frame_chibi_blue_heart_30d .product-image img {
+      &[class*="product-cosmetic_avatar_frame_"] .product-image img {
         box-sizing: border-box;
         object-fit: contain;
         padding: 10px;
@@ -3373,7 +3373,7 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .jn-avatar-frame-overlay-chibi-blue-heart,
+  .jn-avatar-frame-overlay-image,
   .shop-promo-orbit,
   .product-card,
   .product-image img {

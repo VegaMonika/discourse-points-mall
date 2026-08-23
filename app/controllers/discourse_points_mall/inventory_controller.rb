@@ -8,59 +8,6 @@ module DiscoursePointsMall
 
     before_action :ensure_logged_in
 
-    COSMETIC_PRODUCTS = {
-      "cosmetic_title_launch_trainer_30d" => {
-        kind: "title",
-        value: "开服训练家",
-        duration_days: 30,
-      },
-      "cosmetic_title_shiny_collector_30d" => {
-        kind: "title",
-        value: "闪光收藏家",
-        duration_days: 30,
-      },
-      "cosmetic_title_zenless_resident_30d" => {
-        kind: "title",
-        value: "绝区零居民",
-        duration_days: 30,
-      },
-      "cosmetic_avatar_frame_neon_30d" => {
-        kind: "avatar_frame",
-        value: "neon_aqua",
-        duration_days: 30,
-      },
-      "cosmetic_avatar_frame_chibi_blue_heart_30d" => {
-        kind: "avatar_frame",
-        value: "chibi_blue_heart",
-        duration_days: 30,
-      },
-      "cosmetic_card_border_holo_30d" => {
-        kind: "card_border",
-        value: "holo_gold",
-        duration_days: 30,
-      },
-      "cosmetic_profile_bg_zzz_30d" => {
-        kind: "profile_background",
-        value: "zenless_blue",
-        duration_days: 30,
-      },
-      "cosmetic_post_signature_sakura_30d" => {
-        kind: "post_signature",
-        value: "sakura_tail",
-        duration_days: 30,
-      },
-      "cosmetic_svip_glow_30d" => {
-        kind: "svip_glow",
-        value: "aurora",
-        duration_days: 30,
-      },
-      "cosmetic_theme_skin_ticket" => {
-        kind: "theme_skin",
-        value: "starrail_neon",
-        duration_days: nil,
-      },
-    }.freeze
-
     KIND_FIELDS = {
       "title" => {
         value: "jn_cosmetic_title",
@@ -110,7 +57,7 @@ module DiscoursePointsMall
       order = cosmetic_order(params[:order_id])
       return render_json_error("未找到该装饰", status: 404) unless order
 
-      config = COSMETIC_PRODUCTS[order.product.product_key]
+      config = DiscoursePointsMall::Cosmetics.config_for(order.product)
       return render_json_error("该装饰已过期", status: 422) if expired_order?(order, config)
 
       apply_cosmetic!(current_user, config, expires_at_for(order, config))
@@ -138,7 +85,7 @@ module DiscoursePointsMall
         ::PointsMallOrder
           .where(user_id: current_user.id, status: "completed")
           .includes(:product)
-          .select { |order| COSMETIC_PRODUCTS.key?(order.product&.product_key) }
+          .select { |order| DiscoursePointsMall::Cosmetics.configured?(order.product) }
 
       items =
         orders.map { |order| item_payload(order) }
@@ -155,7 +102,7 @@ module DiscoursePointsMall
 
     def item_payload(order)
       product = order.product
-      config = COSMETIC_PRODUCTS[product.product_key]
+      config = DiscoursePointsMall::Cosmetics.config_for(product)
       expires_at = expires_at_for(order, config)
       expired = expires_at.present? && expires_at <= Time.zone.now
       value = cosmetic_value(config)
@@ -186,7 +133,7 @@ module DiscoursePointsMall
     def theme_skin_ticket_count(orders)
       order_count =
         orders.count do |order|
-          COSMETIC_PRODUCTS[order.product&.product_key]&.dig(:kind) == "theme_skin"
+          DiscoursePointsMall::Cosmetics.config_for(order.product)&.dig(:kind) == "theme_skin"
         end
 
       [current_user.custom_fields["jn_theme_skin_ticket_count"].to_i, order_count].max
@@ -219,7 +166,7 @@ module DiscoursePointsMall
         .includes(:product)
         .find_by(id: order_id)
         .tap do |order|
-          return nil unless order && COSMETIC_PRODUCTS.key?(order.product&.product_key)
+          return nil unless order && DiscoursePointsMall::Cosmetics.configured?(order.product)
         end
     end
 
@@ -280,9 +227,9 @@ module DiscoursePointsMall
     end
 
     def display_value_for(kind, value, fallback = nil)
-      named = COSMETIC_PRODUCTS.values.find { |config| config[:kind].to_s == kind.to_s && cosmetic_value(config).to_s == value.to_s }
+      named_product = DiscoursePointsMall::Cosmetics.product_for(kind, value)
       return fallback if fallback.present?
-      return named[:title] if named&.dig(:title).present?
+      return named_product.name if named_product
 
       case value.to_s
       when "neon_aqua"
@@ -309,13 +256,7 @@ module DiscoursePointsMall
     end
 
     def cosmetic_image_url(kind, value)
-      product_key, =
-        COSMETIC_PRODUCTS.find do |_key, config|
-          config[:kind].to_s == kind.to_s && cosmetic_value(config).to_s == value.to_s
-        end
-      return nil unless product_key
-
-      ::PointsMallProduct.find_by(product_key: product_key)&.image_url
+      DiscoursePointsMall::Cosmetics.product_for(kind, value)&.image_url
     end
 
     def equipped?(kind, value)

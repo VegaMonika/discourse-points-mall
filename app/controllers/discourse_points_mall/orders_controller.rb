@@ -25,60 +25,6 @@ module DiscoursePointsMall
     #   netdisk_traffic_10gb_30d   => 10GB，30 天有效
     NETDISK_TRAFFIC_KEY = /\Anetdisk_traffic_(\d+)(gb|mb)(?:_(\d+)d)?\z/i
 
-    COSMETIC_PRODUCTS = {
-      "cosmetic_title_launch_trainer_30d" => {
-        kind: "title",
-        title: "开服训练家",
-        duration_days: 30,
-      },
-      "cosmetic_title_shiny_collector_30d" => {
-        kind: "title",
-        title: "闪光收藏家",
-        duration_days: 30,
-      },
-      "cosmetic_title_zenless_resident_30d" => {
-        kind: "title",
-        title: "绝区零居民",
-        duration_days: 30,
-      },
-      "cosmetic_avatar_frame_neon_30d" => {
-        kind: "avatar_frame",
-        value: "neon_aqua",
-        duration_days: 30,
-      },
-      "cosmetic_avatar_frame_chibi_blue_heart_30d" => {
-        kind: "avatar_frame",
-        value: "chibi_blue_heart",
-        duration_days: 30,
-      },
-      "cosmetic_card_border_holo_30d" => {
-        kind: "card_border",
-        value: "holo_gold",
-        duration_days: 30,
-      },
-      "cosmetic_profile_bg_zzz_30d" => {
-        kind: "profile_background",
-        value: "zenless_blue",
-        duration_days: 30,
-      },
-      "cosmetic_post_signature_sakura_30d" => {
-        kind: "post_signature",
-        value: "sakura_tail",
-        duration_days: 30,
-      },
-      "cosmetic_svip_glow_30d" => {
-        kind: "svip_glow",
-        value: "aurora",
-        duration_days: 30,
-        requires_group: "SVIP",
-      },
-      "cosmetic_theme_skin_ticket" => {
-        kind: "theme_skin",
-        value: "starrail_neon",
-        duration_days: nil,
-      },
-    }.freeze
-
     def index
       orders = ::PointsMallOrder.for_user(current_user.id).recent.includes(:product)
       render json: { orders: serialize_data(orders, DiscoursePointsMall::OrderSerializer) }
@@ -325,11 +271,11 @@ module DiscoursePointsMall
     end
 
     def cosmetic_product?(product)
-      product.respond_to?(:product_key) && COSMETIC_PRODUCTS.key?(product.product_key)
+      product.respond_to?(:product_key) && DiscoursePointsMall::Cosmetics.configured?(product)
     end
 
     def cosmetic_config(product)
-      COSMETIC_PRODUCTS[product.product_key]
+      DiscoursePointsMall::Cosmetics.config_for(product)
     end
 
     def cosmetic_expires_at(config)
