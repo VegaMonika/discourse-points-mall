@@ -29,7 +29,10 @@ function clearAvatarFrames() {
   document.querySelectorAll(".jn-avatar-frame-host").forEach((node) => {
     node.classList.remove(
       "jn-avatar-frame-host",
-      "jn-avatar-frame-host-chibi-blue-heart"
+      "jn-avatar-frame-host-chibi-blue-heart",
+      "jn-avatar-frame-host-chibi-compact",
+      "jn-avatar-frame-host-chibi-feature",
+      "jn-avatar-frame-host-chibi-cluster"
     );
   });
 }
@@ -71,6 +74,10 @@ function chibiFrameTier(img) {
     return "feature";
   }
 
+  if (img.closest(".topic-map, .topic-participants, .participant-list")) {
+    return "cluster";
+  }
+
   return "compact";
 }
 
@@ -91,7 +98,14 @@ function positionChibiBlueHeartFrames() {
         return;
       }
 
-      const frameSize = avatarSize * 1.5;
+      const isCluster = overlay.classList.contains(
+        "jn-avatar-frame-overlay-chibi-cluster"
+      );
+      const isCompact = overlay.classList.contains(
+        "jn-avatar-frame-overlay-chibi-compact"
+      );
+      const frameScale = isCluster ? 1.18 : isCompact ? 1.38 : 1.5;
+      const frameSize = avatarSize * frameScale;
       overlay.style.width = `${frameSize}px`;
       overlay.style.height = `${frameSize}px`;
       overlay.style.left = `${imageRect.left - hostRect.left + imageRect.width / 2}px`;
@@ -104,10 +118,10 @@ function addChibiBlueHeartFrame(img, frameUrl) {
     return;
   }
 
+  const tier = chibiFrameTier(img);
   img.dataset.jnAvatarFrame = "chibi_blue_heart";
-  if (chibiFrameTier(img) === "compact") {
+  if (tier !== "feature") {
     img.classList.add("jn-avatar-frame-chibi-compact");
-    return;
   }
 
   let host = img.parentElement;
@@ -120,12 +134,13 @@ function addChibiBlueHeartFrame(img, frameUrl) {
 
   host.classList.add(
     "jn-avatar-frame-host",
-    "jn-avatar-frame-host-chibi-blue-heart"
+    "jn-avatar-frame-host-chibi-blue-heart",
+    `jn-avatar-frame-host-chibi-${tier}`
   );
 
   const overlay = document.createElement("img");
   overlay.className =
-    "jn-avatar-frame-overlay jn-avatar-frame-overlay-chibi-blue-heart";
+    `jn-avatar-frame-overlay jn-avatar-frame-overlay-chibi-blue-heart jn-avatar-frame-overlay-chibi-${tier}`;
   overlay.src = frameUrl;
   overlay.alt = "";
   overlay.decoding = "async";

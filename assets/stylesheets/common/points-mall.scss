@@ -437,10 +437,7 @@ img.jn-avatar-frame-neon-aqua {
 
 img.jn-avatar-frame-chibi-compact {
   border-radius: 50% !important;
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.94),
-    0 0 0 3px rgba(119, 174, 255, 0.9),
-    0 3px 10px rgba(69, 126, 230, 0.3) !important;
+  box-shadow: 0 1px 5px rgba(69, 126, 230, 0.18) !important;
 }
 
 .user-profile-avatar img.jn-avatar-frame-neon-aqua,
@@ -474,6 +471,12 @@ img.jn-avatar-frame-chibi-compact {
 
 .jn-avatar-frame-overlay-chibi-blue-heart {
   animation: jn-avatar-frame-breathe 3.8s ease-in-out infinite;
+}
+
+.jn-avatar-frame-overlay-chibi-compact,
+.jn-avatar-frame-overlay-chibi-cluster {
+  z-index: 3;
+  filter: drop-shadow(0 2px 4px rgba(56, 113, 217, 0.24));
 }
 
 @keyframes jn-avatar-frame-breathe {
