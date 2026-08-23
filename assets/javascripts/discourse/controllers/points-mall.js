@@ -38,7 +38,7 @@ export default class PointsMallController extends Controller {
   @tracked shopTypeFilter = "all";
   @tracked shopCategoryFilter = "all";
   @tracked shopKeyword = "";
-  @tracked shopSort = "featured";
+  @tracked shopSort = "popular";
   @tracked orderTypeFilter = "all";
   @tracked pointsFilter = "all";
 
@@ -178,7 +178,7 @@ export default class PointsMallController extends Controller {
   }
 
   get shopSortOptions() {
-    return ["featured", "popular", "price_asc", "price_desc", "latest"];
+    return ["popular", "price_asc", "price_desc", "latest"];
   }
 
   get shopCategoryOptions() {

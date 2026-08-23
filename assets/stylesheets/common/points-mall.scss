@@ -444,6 +444,43 @@ img.jn-avatar-frame-neon-aqua {
     0 0 46px rgba(255, 108, 196, 0.52) !important;
 }
 
+.jn-avatar-frame-host {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.jn-avatar-frame-overlay {
+  position: absolute !important;
+  z-index: 5;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  object-fit: contain;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  filter: drop-shadow(0 4px 8px rgba(56, 113, 217, 0.2));
+}
+
+.jn-avatar-frame-overlay-chibi-blue-heart {
+  animation: jn-avatar-frame-breathe 3.8s ease-in-out infinite;
+}
+
+@keyframes jn-avatar-frame-breathe {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 4px 8px rgba(56, 113, 217, 0.2));
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.018);
+    filter: drop-shadow(0 5px 11px rgba(88, 145, 255, 0.32));
+  }
+}
+
 html.jn-theme-skin-starrail-neon {
   --tertiary: #69eaff;
   --tertiary-low: rgba(105, 234, 255, 0.18);
@@ -942,7 +979,7 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
 
   .shop-insight-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     margin-bottom: 12px;
   }
@@ -3147,6 +3184,12 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
         }
       }
 
+      &.product-cosmetic_avatar_frame_chibi_blue_heart_30d .product-image img {
+        box-sizing: border-box;
+        object-fit: contain;
+        padding: 10px;
+      }
+
       &:hover .product-image img {
         transform: scale(1.035);
       }
@@ -3319,6 +3362,7 @@ html.jn-theme-skin-starrail-neon .inventory-card.equipped {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .jn-avatar-frame-overlay-chibi-blue-heart,
   .shop-promo-orbit,
   .product-card,
   .product-image img {

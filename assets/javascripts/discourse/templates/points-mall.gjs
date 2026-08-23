@@ -405,10 +405,6 @@ export default <template>
               <strong>{{@controller.shopInsights.categoryCount}}</strong>
             </article>
             <article class="shop-insight-card">
-              <span>{{i18n "points_mall.shop.insights.featured_count"}}</span>
-              <strong>{{@controller.shopInsights.featuredCount}}</strong>
-            </article>
-            <article class="shop-insight-card">
               <span>{{i18n "points_mall.shop.insights.redeemed_count"}}</span>
               <strong>{{@controller.shopInsights.redeemedCount}}</strong>
             </article>
@@ -478,164 +474,6 @@ export default <template>
             </div>
 
             {{#if @controller.filteredShopProducts.length}}
-              {{#if @controller.showFeaturedShelf}}
-                <section class="shop-featured-shelf">
-                  <div class="shop-section-head">
-                    <div>
-                      <h3>{{i18n "points_mall.shop.featured_title"}}</h3>
-                      <p>{{i18n "points_mall.shop.featured_tip"}}</p>
-                    </div>
-                    <span>
-                      {{i18n
-                        "points_mall.shop.section_count"
-                        count=@controller.featuredShopProducts.length
-                      }}
-                    </span>
-                  </div>
-
-                  <div class="shop-featured-grid">
-                    {{#each @controller.featuredShopProducts as |product|}}
-                      <div class="product-card is-featured">
-                        {{#if product.badge_text}}
-                          <span
-                            class="product-corner-badge"
-                          >{{product.badge_text}}</span>
-                        {{else if product.featured}}
-                          <span class="product-corner-badge">
-                            {{i18n "points_mall.shop.badges.featured"}}
-                          </span>
-                        {{/if}}
-
-                        {{#if product.image_url}}
-                          <div class="product-image">
-                            <img
-                              src={{product.image_url}}
-                              alt={{product.name}}
-                            />
-                          </div>
-                        {{else}}
-                          <div class="product-image product-image-placeholder">
-                            {{dIcon "gift"}}
-                          </div>
-                        {{/if}}
-
-                        <div class="product-info">
-                          <div class="product-badges">
-                            <span class="product-category-badge">
-                              {{#if product.category}}
-                                {{product.category}}
-                              {{else if (eq product.product_type "physical")}}
-                                {{i18n
-                                  "points_mall.shop.filters.category.default_physical"
-                                }}
-                              {{else}}
-                                {{i18n
-                                  "points_mall.shop.filters.category.default_virtual"
-                                }}
-                              {{/if}}
-                            </span>
-                            <span
-                              class="product-type-badge type-{{product.product_type}}"
-                            >
-                              {{i18n
-                                (concat
-                                  "points_mall.shop.type." product.product_type
-                                )
-                              }}
-                            </span>
-                          </div>
-
-                          <h3>{{product.name}}</h3>
-                          <p>{{product.description}}</p>
-                          <div class="product-meta">
-                            <span class="product-cost">
-                              {{i18n
-                                "points_mall.shop.cost"
-                                points=product.points_cost
-                              }}
-                            </span>
-                            <span class="product-stock">
-                              {{#if (eq product.stock -1)}}
-                                {{i18n "points_mall.shop.unlimited"}}
-                              {{else if (gt product.stock 0)}}
-                                {{i18n
-                                  "points_mall.shop.stock"
-                                  count=product.stock
-                                }}
-                              {{else}}
-                                {{i18n "points_mall.shop.out_of_stock"}}
-                              {{/if}}
-                            </span>
-                          </div>
-                          <div class="product-stats-row">
-                            <span>
-                              {{i18n
-                                "points_mall.shop.redeemed_count"
-                                count=product.redeemed_count
-                              }}
-                            </span>
-                          </div>
-
-                          {{#if product.is_makeup_card}}
-                            <div class="product-makeup-meta">
-                              <p>
-                                {{i18n
-                                  "points_mall.shop.makeup.monthly_status"
-                                  purchased=product.makeup_card.purchased_count
-                                  used=product.makeup_card.used_count
-                                  remain=product.makeup_card.available_count
-                                }}
-                              </p>
-                              <p>{{product.makeup_tier_text}}</p>
-                            </div>
-                          {{/if}}
-                        </div>
-
-                        <div class="product-action">
-                          {{#if product.is_makeup_card}}
-                            {{#if product.purchaseable}}
-                              <DButton
-                                @action={{fn @controller.buyProduct product.id}}
-                                @label="points_mall.shop.buy"
-                                class="btn-primary"
-                              />
-                            {{else if
-                              (eq product.purchase_disabled_reason "disabled")
-                            }}
-                              <DButton
-                                @label="points_mall.shop.makeup.off_shelf"
-                                @disabled={{true}}
-                                class="btn-disabled"
-                              />
-                            {{else}}
-                              <DButton
-                                @label="points_mall.shop.makeup.limit_reached"
-                                @disabled={{true}}
-                                class="btn-disabled"
-                              />
-                            {{/if}}
-                          {{else if
-                            (or (eq product.stock -1) (gt product.stock 0))
-                          }}
-                            <DButton
-                              @action={{fn @controller.buyProduct product.id}}
-                              @label="points_mall.shop.buy"
-                              class="btn-primary"
-                            />
-                          {{else}}
-                            <DButton
-                              @label="points_mall.shop.out_of_stock"
-                              @disabled={{true}}
-                              class="btn-disabled"
-                            />
-                          {{/if}}
-                        </div>
-                      </div>
-                    {{/each}}
-                  </div>
-                </section>
-              {{/if}}
-
               <div class="shop-sections">
                 {{#each @controller.shopSections as |shopSection|}}
                   <section class="shop-section">
@@ -653,17 +491,12 @@ export default <template>
                     <div class="products-grid">
                       {{#each shopSection.products as |product|}}
                         <div
-                          class="product-card
-                            {{if product.featured 'is-featured'}}"
+                          class="product-card product-{{product.product_key}}"
                         >
                           {{#if product.badge_text}}
                             <span
                               class="product-corner-badge"
                             >{{product.badge_text}}</span>
-                          {{else if product.featured}}
-                            <span class="product-corner-badge">
-                              {{i18n "points_mall.shop.badges.featured"}}
-                            </span>
                           {{/if}}
 
                           {{#if product.image_url}}

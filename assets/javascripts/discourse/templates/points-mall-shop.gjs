@@ -9,7 +9,7 @@ export default <template>
 
     <div class="products-grid">
       {{#each @controller.model.products as |product|}}
-        <div class="product-card">
+        <div class="product-card product-{{product.product_key}}">
           {{#if product.image_url}}
             <div class="product-image">
               <img src={{product.image_url}} alt={{product.name}} />

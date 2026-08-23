@@ -200,7 +200,7 @@ zh_CN:
         points: "积分"
       shop:
         title: "积分商店"
-        header_tip: "精选推荐、热门兑换和分类分区都会在这里集中展示。"
+        header_tip: "热门兑换和分类分区都会在这里集中展示。"
         total_count: "共 %{count} 件商品"
         search_placeholder: "搜索商品名、描述或分类"
         buy: "兑换"

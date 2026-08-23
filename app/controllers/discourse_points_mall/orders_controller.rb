@@ -46,6 +46,11 @@ module DiscoursePointsMall
         value: "neon_aqua",
         duration_days: 30,
       },
+      "cosmetic_avatar_frame_chibi_blue_heart_30d" => {
+        kind: "avatar_frame",
+        value: "chibi_blue_heart",
+        duration_days: 30,
+      },
       "cosmetic_card_border_holo_30d" => {
         kind: "card_border",
         value: "holo_gold",

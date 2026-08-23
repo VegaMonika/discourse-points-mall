@@ -173,7 +173,7 @@ en:
         points: "Points"
       shop:
         title: "Points Shop"
-        header_tip: "Featured picks, popular redemptions, and category shelves all live here."
+        header_tip: "Popular redemptions and category shelves all live here."
         total_count: "%{count} items"
         search_placeholder: "Search by name, description, or category"
         buy: "Buy"

@@ -29,6 +29,11 @@ module DiscoursePointsMall
         value: "neon_aqua",
         duration_days: 30,
       },
+      "cosmetic_avatar_frame_chibi_blue_heart_30d" => {
+        kind: "avatar_frame",
+        value: "chibi_blue_heart",
+        duration_days: 30,
+      },
       "cosmetic_card_border_holo_30d" => {
         kind: "card_border",
         value: "holo_gold",
@@ -198,6 +203,7 @@ module DiscoursePointsMall
           value: value,
           display_value: display_value_for(kind, value),
           preview_class: preview_class_for(kind, value),
+          image_url: cosmetic_image_url(kind, value),
           expires_at: current_user.custom_fields[fields[:expires]].presence,
           expires_display: display_time(parse_time(current_user.custom_fields[fields[:expires]].presence)),
           remaining_text: remaining_text(parse_time(current_user.custom_fields[fields[:expires]].presence)),
@@ -281,6 +287,8 @@ module DiscoursePointsMall
       case value.to_s
       when "neon_aqua"
         "霓虹水蓝"
+      when "chibi_blue_heart"
+        "蓝心绮梦"
       when "holo_gold"
         "全息金"
       when "zenless_blue"
@@ -298,6 +306,16 @@ module DiscoursePointsMall
 
     def preview_class_for(kind, value)
       "inventory-preview-#{kind.to_s.dasherize}-#{value.to_s.dasherize}"
+    end
+
+    def cosmetic_image_url(kind, value)
+      product_key, =
+        COSMETIC_PRODUCTS.find do |_key, config|
+          config[:kind].to_s == kind.to_s && cosmetic_value(config).to_s == value.to_s
+        end
+      return nil unless product_key
+
+      ::PointsMallProduct.find_by(product_key: product_key)&.image_url
     end
 
     def equipped?(kind, value)

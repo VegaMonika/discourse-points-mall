@@ -335,8 +335,11 @@
   }
 
   .points-mall-nav-shell {
+    --pm-sticky-gap: 4px;
+    --pm-header-offset: var(--header-offset, 52px);
+
     position: sticky;
-    top: calc(var(--header-offset, 52px) + 4px);
+    top: calc(var(--pm-header-offset) + var(--pm-sticky-gap));
     z-index: 8;
     margin-bottom: 8px;
     padding: 5px;
@@ -346,6 +349,11 @@
     -webkit-backdrop-filter: blur(14px) saturate(1.2);
     backdrop-filter: blur(14px) saturate(1.2);
     scrollbar-width: none;
+    transition:
+      transform 160ms ease,
+      opacity 100ms linear,
+      visibility 0s linear;
+    will-change: transform, opacity;
 
     &::-webkit-scrollbar {
       display: none;
@@ -375,6 +383,19 @@
     padding: 8px;
     border-radius: 16px;
   }
+}
+
+body.f-nav-hidden .points-mall-container .points-mall-nav-shell {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(
+    calc(-100% - var(--pm-header-offset) - var(--pm-sticky-gap))
+  );
+  pointer-events: none;
+  transition:
+    transform 160ms ease,
+    opacity 100ms linear,
+    visibility 0s linear 160ms;
 }
 
 .points-mall-shop {
@@ -522,35 +543,44 @@
   }
 
   .shop-toolbar {
-    top: calc(var(--header-offset, 52px) + 58px);
+    position: static;
+    top: auto;
+    z-index: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     margin-bottom: 10px;
-    padding: 6px;
-    overflow: visible;
-  }
-
-  .shop-filter-row,
-  .shop-sort-row {
-    gap: 5px;
-    padding-right: 28px;
+    padding: 6px 14px 6px 6px;
     overflow-x: auto;
+    overflow-y: hidden;
+    border-radius: 14px;
+    background: var(--pm-card);
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-    -webkit-mask-image: linear-gradient(
-      to right,
-      #000 0,
-      #000 calc(100% - 24px),
-      transparent
-    );
-    mask-image: linear-gradient(
-      to right,
-      #000 0,
-      #000 calc(100% - 24px),
-      transparent
-    );
 
     &::-webkit-scrollbar {
       display: none;
     }
+  }
+
+  .shop-filter-row,
+  .shop-sort-row {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    gap: 5px;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible;
+    border: 0;
+    -webkit-mask-image: none;
+    mask-image: none;
 
     .shop-filter-chip,
     .shop-sort-chip {
@@ -821,6 +851,12 @@
   .inventory-card .btn,
   .inventory-equipped-item .btn {
     min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .points-mall-container .points-mall-nav-shell {
+    transition: none;
   }
 }
 
