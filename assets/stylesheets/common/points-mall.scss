@@ -435,6 +435,14 @@ img.jn-avatar-frame-neon-aqua {
     0 0 30px rgba(255, 108, 196, 0.48) !important;
 }
 
+img.jn-avatar-frame-chibi-compact {
+  border-radius: 50% !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.94),
+    0 0 0 3px rgba(119, 174, 255, 0.9),
+    0 3px 10px rgba(69, 126, 230, 0.3) !important;
+}
+
 .user-profile-avatar img.jn-avatar-frame-neon-aqua,
 .user-card-avatar img.jn-avatar-frame-neon-aqua {
   box-shadow:
@@ -451,7 +459,7 @@ img.jn-avatar-frame-neon-aqua {
 
 .jn-avatar-frame-overlay {
   position: absolute !important;
-  z-index: 5;
+  z-index: 2;
   max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;

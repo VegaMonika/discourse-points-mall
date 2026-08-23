@@ -11,14 +11,21 @@ function usernameFromApi(api) {
 
 let activeFrameState = {};
 let avatarRefreshTimer;
+const AVATAR_IMAGE_SELECTOR = 'img.avatar, img[src*="/user_avatar/"]';
 
 function clearAvatarFrames() {
   document
     .querySelectorAll("img.jn-avatar-frame-neon-aqua")
     .forEach((node) => node.classList.remove("jn-avatar-frame-neon-aqua"));
   document
+    .querySelectorAll("img.jn-avatar-frame-chibi-compact")
+    .forEach((node) => node.classList.remove("jn-avatar-frame-chibi-compact"));
+  document
     .querySelectorAll(".jn-avatar-frame-overlay")
     .forEach((node) => node.remove());
+  document.querySelectorAll("img[data-jn-avatar-frame]").forEach((node) => {
+    delete node.dataset.jnAvatarFrame;
+  });
   document.querySelectorAll(".jn-avatar-frame-host").forEach((node) => {
     node.classList.remove(
       "jn-avatar-frame-host",
@@ -45,7 +52,64 @@ function avatarBelongsToUser(img, username) {
   );
 }
 
+function chibiFrameTier(img) {
+  const size = Math.max(
+    img.getBoundingClientRect().width,
+    img.getBoundingClientRect().height,
+    img.width || 0,
+    img.height || 0,
+    Number.parseFloat(img.getAttribute("width")) || 0,
+    Number.parseFloat(img.getAttribute("height")) || 0
+  );
+
+  if (
+    size >= 56 &&
+    img.closest(
+      ".post-avatar .main-avatar, .user-profile-avatar, .user-card-avatar"
+    )
+  ) {
+    return "feature";
+  }
+
+  return "compact";
+}
+
+function positionChibiBlueHeartFrames() {
+  document
+    .querySelectorAll(".jn-avatar-frame-overlay-chibi-blue-heart")
+    .forEach((overlay) => {
+      const host = overlay.parentElement;
+      const img = host?.querySelector("img[data-jn-avatar-frame]");
+      if (!img?.isConnected || !host?.isConnected) {
+        return;
+      }
+
+      const imageRect = img.getBoundingClientRect();
+      const hostRect = host.getBoundingClientRect();
+      const avatarSize = Math.max(imageRect.width, imageRect.height);
+      if (!avatarSize) {
+        return;
+      }
+
+      const frameSize = avatarSize * 1.5;
+      overlay.style.width = `${frameSize}px`;
+      overlay.style.height = `${frameSize}px`;
+      overlay.style.left = `${imageRect.left - hostRect.left + imageRect.width / 2}px`;
+      overlay.style.top = `${imageRect.top - hostRect.top + imageRect.height / 2}px`;
+    });
+}
+
 function addChibiBlueHeartFrame(img, frameUrl) {
+  if (img.dataset.jnAvatarFrame === "chibi_blue_heart") {
+    return;
+  }
+
+  img.dataset.jnAvatarFrame = "chibi_blue_heart";
+  if (chibiFrameTier(img) === "compact") {
+    img.classList.add("jn-avatar-frame-chibi-compact");
+    return;
+  }
+
   let host = img.parentElement;
   if (host?.tagName === "PICTURE") {
     host = host.parentElement;
@@ -68,29 +132,40 @@ function addChibiBlueHeartFrame(img, frameUrl) {
   overlay.setAttribute("aria-hidden", "true");
   host.appendChild(overlay);
 
-  const positionOverlay = () => {
-    if (!img.isConnected || !overlay.isConnected) {
-      return;
-    }
-
-    const imageRect = img.getBoundingClientRect();
-    const hostRect = host.getBoundingClientRect();
-    const avatarSize = Math.max(imageRect.width, imageRect.height);
-    if (!avatarSize) {
-      return;
-    }
-
-    const frameSize = avatarSize * 1.82;
-    overlay.style.width = `${frameSize}px`;
-    overlay.style.height = `${frameSize}px`;
-    overlay.style.left = `${imageRect.left - hostRect.left + imageRect.width / 2}px`;
-    overlay.style.top = `${imageRect.top - hostRect.top + imageRect.height / 2}px`;
-  };
-
-  positionOverlay();
+  positionChibiBlueHeartFrames();
   if (!img.complete) {
-    img.addEventListener("load", positionOverlay, { once: true });
+    img.addEventListener("load", positionChibiBlueHeartFrames, { once: true });
   }
+}
+
+function avatarImages(root = document) {
+  const images = [];
+  if (root.matches?.(AVATAR_IMAGE_SELECTOR)) {
+    images.push(root);
+  }
+  root
+    .querySelectorAll?.(AVATAR_IMAGE_SELECTOR)
+    .forEach((img) => images.push(img));
+  return images;
+}
+
+function decorateAvatarFrames(root = document) {
+  const { username, frame, frameUrl } = activeFrameState;
+  if (!username || !["neon_aqua", "chibi_blue_heart"].includes(frame)) {
+    return;
+  }
+
+  avatarImages(root).forEach((img) => {
+    if (!avatarBelongsToUser(img, username)) {
+      return;
+    }
+
+    if (frame === "neon_aqua") {
+      img.classList.add("jn-avatar-frame-neon-aqua");
+    } else if (frameUrl) {
+      addChibiBlueHeartFrame(img, frameUrl);
+    }
+  });
 }
 
 function applyAvatarFrame(username, frame, frameUrl) {
@@ -102,35 +177,14 @@ function applyAvatarFrame(username, frame, frameUrl) {
     return;
   }
 
-  const selectors = [
-    ".header-dropdown-toggle.current-user img.avatar",
-    ".current-user img.avatar",
-    ".user-profile-avatar img.avatar",
-    ".user-card-avatar img.avatar",
-    "img.avatar",
-  ];
-
-  document.querySelectorAll(selectors.join(",")).forEach((img) => {
-    if (avatarBelongsToUser(img, username) && frame === "neon_aqua") {
-      img.classList.add("jn-avatar-frame-neon-aqua");
-    } else if (
-      avatarBelongsToUser(img, username) &&
-      frame === "chibi_blue_heart" &&
-      frameUrl
-    ) {
-      addChibiBlueHeartFrame(img, frameUrl);
-    }
-  });
+  decorateAvatarFrames();
 }
 
-function scheduleAvatarFrameRefresh() {
+function scheduleAvatarFrameRefresh(root = document) {
   window.clearTimeout(avatarRefreshTimer);
   avatarRefreshTimer = window.setTimeout(() => {
-    applyAvatarFrame(
-      activeFrameState.username,
-      activeFrameState.frame,
-      activeFrameState.frameUrl
-    );
+    decorateAvatarFrames(root);
+    positionChibiBlueHeartFrames();
   }, 80);
 }
 
@@ -144,11 +198,12 @@ function watchForNewAvatars() {
       [...mutation.addedNodes].some(
         (node) =>
           node.nodeType === Node.ELEMENT_NODE &&
-          (node.matches?.("img.avatar") || node.querySelector?.("img.avatar"))
+          (node.matches?.(AVATAR_IMAGE_SELECTOR) ||
+            node.querySelector?.(AVATAR_IMAGE_SELECTOR))
       )
     );
     if (avatarAdded) {
-      scheduleAvatarFrameRefresh();
+      scheduleAvatarFrameRefresh(document);
     }
   });
   window.jnAvatarFrameObserver.observe(document.body, {
@@ -191,7 +246,7 @@ export default apiInitializer("1.8.0", (api) => {
   });
 
   watchForNewAvatars();
-  window.addEventListener("resize", scheduleAvatarFrameRefresh);
+  window.addEventListener("resize", positionChibiBlueHeartFrames);
   refreshCurrentUserCosmetics(api);
   window.addEventListener("jn:cosmetics-updated", (event) => {
     const inventory = event?.detail?.inventory || {};
