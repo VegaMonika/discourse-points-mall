@@ -12,6 +12,8 @@ function usernameFromApi(api) {
 let activeFrameState = {};
 let avatarRefreshTimer;
 const AVATAR_IMAGE_SELECTOR = 'img.avatar, img[src*="/user_avatar/"]';
+const AVATAR_FRAME_EXCLUDED_CONTEXT =
+  ".modal-container, .d-modal, .dialog-holder, .emoji-picker, .fk-d-menu";
 
 function clearAvatarFrames() {
   document
@@ -54,6 +56,10 @@ function avatarBelongsToUser(img, username) {
     src.includes(`/${normalized}/`) ||
     src.includes(`/${username.toLowerCase()}/`)
   );
+}
+
+function avatarFrameAllowed(img) {
+  return !img.closest(AVATAR_FRAME_EXCLUDED_CONTEXT);
 }
 
 function chibiFrameTier(img) {
@@ -173,7 +179,7 @@ function decorateAvatarFrames(root = document) {
   }
 
   avatarImages(root).forEach((img) => {
-    if (!avatarBelongsToUser(img, username)) {
+    if (!avatarFrameAllowed(img) || !avatarBelongsToUser(img, username)) {
       return;
     }
 

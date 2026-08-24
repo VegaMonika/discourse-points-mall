@@ -479,6 +479,35 @@ img.jn-avatar-frame-chibi-compact {
   filter: drop-shadow(0 2px 4px rgba(56, 113, 217, 0.24));
 }
 
+// Native user-status/SVIP markers are interactive identity information. Keep
+// them readable above cosmetic frames instead of allowing the frame artwork to
+// cover the bottom-right badge.
+.jn-avatar-frame-host > .user-status-background {
+  z-index: 6 !important;
+}
+
+.header-dropdown-toggle.current-user {
+  .user-status-background img.emoji {
+    width: 22px !important;
+    height: 22px !important;
+    max-width: 22px !important;
+    max-height: 22px !important;
+    object-fit: contain;
+  }
+}
+
+// The forum theme enlarges custom emoji globally. In the status editor that
+// made the selected icon spill over its trigger and crowd the text field.
+.modal.user-status .user-status-picker {
+  .btn-emoji img.emoji {
+    width: 24px !important;
+    height: 24px !important;
+    max-width: 24px !important;
+    max-height: 24px !important;
+    object-fit: contain;
+  }
+}
+
 @keyframes jn-avatar-frame-breathe {
   0%,
   100% {
