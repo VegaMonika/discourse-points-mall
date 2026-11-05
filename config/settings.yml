@@ -1,4 +1,7 @@
 plugins:
+  points_mall_star_vault_enabled:
+    default: false
+    client: true
   points_mall_enabled:
     default: true
     client: true

@@ -1,0 +1,2 @@
+html,body,main{width:100%;height:100%;margin:0;overflow:hidden;background:transparent;color:#e7effb;font:13px system-ui,sans-serif}#stage{position:relative;width:100%;height:100%;cursor:grab;border-radius:16px}#stage:active{cursor:grabbing}canvas{display:block;width:100%;height:100%;touch-action:pan-y}#loading{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;pointer-events:none}:focus-visible{outline:2px solid #adefdc;outline-offset:-3px}
+:root{color-scheme:dark}html{background:radial-gradient(ellipse at 70% 30%,#39385f,#222c40 75%)}

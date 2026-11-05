@@ -61,6 +61,7 @@ module DiscoursePointsMall
       return render_json_error("该装饰已过期", status: 422) if expired_order?(order, config)
 
       apply_cosmetic!(current_user, config, expires_at_for(order, config))
+      DiscoursePointsMall::Cosmetics.bust_equipped_cache!
       render json: inventory_payload
     rescue StandardError => e
       Rails.logger.warn("[points-mall] inventory equip failed: #{e.class}: #{e.message}")
@@ -72,6 +73,7 @@ module DiscoursePointsMall
       return render_json_error("不支持该装饰类型", status: 422) unless KIND_FIELDS.key?(kind)
 
       remove_cosmetic!(current_user, kind)
+      DiscoursePointsMall::Cosmetics.bust_equipped_cache!
       render json: inventory_payload
     rescue StandardError => e
       Rails.logger.warn("[points-mall] inventory unequip failed: #{e.class}: #{e.message}")
@@ -103,6 +105,7 @@ module DiscoursePointsMall
     def item_payload(order)
       product = order.product
       config = DiscoursePointsMall::Cosmetics.config_for(product)
+      vault_reward = order.star_vault_reward? ? order_notes(order) : {}
       expires_at = expires_at_for(order, config)
       expired = expires_at.present? && expires_at <= Time.zone.now
       value = cosmetic_value(config)
@@ -111,8 +114,8 @@ module DiscoursePointsMall
         order_id: order.id,
         product_id: product.id,
         product_key: product.product_key,
-        name: product.name,
-        description: product.description,
+        name: vault_reward["reward_name"].presence || product.name,
+        description: vault_reward["source"] == "star_vault" ? "每日免费宝箱奖励，绑定账号，不可交易或提现；到期时间以本物品显示为准。" : product.description,
         image_url: product.image_url,
         kind: config[:kind],
         kind_label: KIND_LABELS[config[:kind]] || config[:kind],
@@ -143,6 +146,9 @@ module DiscoursePointsMall
       KIND_FIELDS.each_with_object({}) do |(kind, fields), payload|
         value = current_user.custom_fields[fields[:value]].presence
         next unless value
+        # 已过期但还没被定时任务清掉的装饰不再算「已装备」（前端就不会继续显示）
+        expires_at = parse_time(current_user.custom_fields[fields[:expires]].presence)
+        next if expires_at && expires_at <= Time.zone.now
 
         payload[kind] = {
           kind: kind,
@@ -271,6 +277,12 @@ module DiscoursePointsMall
       value = cosmetic_value(config)
       fields = KIND_FIELDS[kind]
       raise "unsupported cosmetic kind" unless fields
+
+      # Equipping another copy must not shorten the same decoration already worn.
+      if user.custom_fields[fields[:value]].to_s == value.to_s
+        previous_expiry = parse_time(user.custom_fields[fields[:expires]])
+        expires_at = [expires_at, previous_expiry].compact.max if expires_at
+      end
 
       if kind == "title"
         if user.custom_fields["jn_cosmetic_title"].blank?

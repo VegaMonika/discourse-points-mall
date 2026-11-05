@@ -881,8 +881,8 @@ export default class PointsMallController extends Controller {
   }
 
   async reloadProducts() {
-    const result = await ajax("/points-mall/products");
-    this.model.products = result.products || [];
+    const result = await ajax("/points-mall/products.json");
+    this.model.products = Array.isArray(result) ? result : (result?.products || []);
     this.notifyPropertyChange("model");
   }
 

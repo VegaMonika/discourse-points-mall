@@ -1,6 +1,13 @@
 import DiscourseRoute from "discourse/routes/discourse";
 import { ajax } from "discourse/lib/ajax";
 
+function productList(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  return payload?.products || [];
+}
+
 export default class PointsMallRoute extends DiscourseRoute {
   beforeModel() {
     if (!this.currentUser) {
@@ -14,7 +21,7 @@ export default class PointsMallRoute extends DiscourseRoute {
         checkins: [],
         summary: {},
       })),
-      ajax("/points-mall/products").catch(() => ({ products: [] })),
+      ajax("/points-mall/products.json"),
       ajax("/points-mall/orders").catch(() => ({ orders: [] })),
       ajax("/points-mall/addresses").catch(() => ({ addresses: [] })),
       ajax("/points-mall/points/ledger").catch(() => ({ summary: {}, events: [] })),
@@ -24,7 +31,7 @@ export default class PointsMallRoute extends DiscourseRoute {
     return {
       checkins: checkins.checkins || [],
       summary: checkins.summary || {},
-      products: products.products || [],
+      products: productList(products),
       orders: orders.orders || [],
       addresses: addresses.addresses || [],
       ledgerSummary: ledger.summary || {},

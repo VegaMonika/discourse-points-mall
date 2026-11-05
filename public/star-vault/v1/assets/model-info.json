@@ -1,0 +1,11 @@
+{
+  "name": "星辉宝库",
+  "format": "glTF 2.0 binary",
+  "bytes": 1404072,
+  "meshes": 65,
+  "triangles": 16780,
+  "animations": [
+    "Open_StarVault"
+  ],
+  "textures": 0
+}

@@ -6,6 +6,7 @@ import DButton from "discourse/ui-kit/d-button";
 import dFormatDate from "discourse/ui-kit/helpers/d-format-date";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
 import { i18n } from "discourse-i18n";
+import StarVault from "../components/points-mall-star-vault";
 
 export default <template>
   <div class="points-mall-container">
@@ -323,10 +324,10 @@ export default <template>
           </div>
 
           <section class="shop-storefront-hero">
-            <div class="shop-promo-banner">
+            <div class="shop-promo-banner shop-promo-banner--star-vault">
               <div class="shop-promo-copy">
-                <span>{{i18n "points_mall.storefront.eyebrow"}}</span>
-                <h2>{{i18n "points_mall.storefront.hero_title"}}</h2>
+                <span>JUSTNAINAI · 星辉宝库</span>
+                <h2>把日常，收藏成星光。</h2>
                 <p>{{i18n "points_mall.storefront.hero_tip"}}</p>
                 <button
                   type="button"
@@ -337,11 +338,7 @@ export default <template>
                   {{i18n "points_mall.storefront.checkin_cta"}}
                 </button>
               </div>
-              <div class="shop-promo-visual" aria-hidden="true">
-                <span class="shop-promo-orbit orbit-one"></span>
-                <span class="shop-promo-orbit orbit-two"></span>
-                {{dIcon "gift"}}
-              </div>
+              <StarVault @onInventory={{fn @controller.switchTab "inventory"}} />
             </div>
 
             <aside class="shop-member-card">

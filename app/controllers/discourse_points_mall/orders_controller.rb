@@ -298,6 +298,15 @@ module DiscoursePointsMall
       end
 
       expires_at = cosmetic_expires_at(config)
+      # 同一件装饰还没到期又买：在原到期时间上顺延，不浪费剩余天数
+      if (fields = DiscoursePointsMall::COSMETIC_EXPIRY_FIELDS.values.find { |f| f.first == "jn_cosmetic_#{config[:kind]}" }) && config[:duration_days]
+        current_value = user.custom_fields[fields.first].to_s
+        current_expiry = (Time.zone.parse(user.custom_fields[fields[1]].to_s) rescue nil)
+        same = current_value == (config[:kind] == "title" ? config[:title] : config[:value]).to_s
+        if same && current_expiry && current_expiry > Time.zone.now
+          expires_at = current_expiry + config[:duration_days].days
+        end
+      end
       payload = {
         product_key: product.product_key,
         kind: config[:kind],
@@ -309,7 +318,11 @@ module DiscoursePointsMall
 
       case config[:kind]
       when "title"
-        user.custom_fields["jn_previous_title_before_cosmetic"] = user.title.to_s
+        # 已经戴着限时称号时不要把它记成「原头衔」，否则到期后会恢复成限时称号（变成永久）
+        active_cosmetic_title = user.custom_fields["jn_cosmetic_title"].to_s.presence
+        unless active_cosmetic_title && user.title.to_s == active_cosmetic_title
+          user.custom_fields["jn_previous_title_before_cosmetic"] = user.title.to_s
+        end
         user.title = config[:title]
         user.custom_fields["jn_cosmetic_title"] = config[:title]
         user.custom_fields["jn_cosmetic_title_expires_at"] = expires_at&.iso8601.to_s
@@ -339,6 +352,7 @@ module DiscoursePointsMall
 
       user.save_custom_fields(true)
       user.save!
+      DiscoursePointsMall::Cosmetics.bust_equipped_cache!
       [true, nil, payload]
     rescue StandardError => e
       Rails.logger.warn("[points-mall] cosmetic grant failed: #{e.class}: #{e.message}")
@@ -502,7 +516,7 @@ module DiscoursePointsMall
         points_spent: order.points_spent,
         status: order.status,
         shipping_info: order.shipping_info,
-        notes: order.notes,
+        notes: DiscoursePointsMall::Cosmetics.notes_text(order.notes),
         created_at: order.created_at,
         product: {
           id: product.id,

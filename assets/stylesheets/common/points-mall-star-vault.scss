@@ -1,0 +1,137 @@
+.points-mall-container .shop-promo-banner.shop-promo-banner--star-vault {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 1.1fr);
+  gap: 4px;
+  padding: 24px 8px 24px 28px;
+  background: radial-gradient(ellipse at 85% 40%, #39385f 0%, #1c2638 60%, #172231 100%);
+  color: #f4f7ff;
+
+  .shop-promo-copy { position: relative; min-width: 0; }
+  .shop-promo-copy h2 { color: #f4f7ff; font-size: clamp(24px, 2.2vw, 34px); text-wrap: balance; }
+  .shop-promo-copy > span { color: #adefdc; }
+  .shop-promo-copy p { color: #d3dce9; }
+  .points-mall-star-vault { min-width: 0; width: 100%; }
+  .points-mall-star-vault iframe { display: block; border: 0; width: 100%; height: 320px; color-scheme: normal; }
+}
+
+.points-mall-container .shop-promo-banner--star-vault .points-mall-star-vault--daily {
+  min-width: 0;
+  iframe { height: 250px; }
+  .jn-vault-open { display: block; width: min(100%, 260px); margin: 0 auto; }
+}
+.points-mall-star-vault--daily, .jn-vault-dialog {
+  button, summary, .jn-vault-result-actions a { min-height: 44px; cursor: pointer; }
+  button { border: 1px solid #53617d; border-radius: 10px; color: #eaf0fc; background: #26324a; padding: 8px 14px; font: inherit; }
+  button:disabled { opacity: .6; cursor: default; }
+  button:focus-visible, summary:focus-visible, a:focus-visible { outline: 2px solid #adefdc; outline-offset: 3px; }
+  button.jn-vault-open { background: #adefdc; color: #112b28; border-color: #adefdc; font-weight: 700; }
+  .rarity-blue { --vault-rarity: #87bfff; }
+  .rarity-purple { --vault-rarity: #cbb0ff; }
+  .rarity-gold { --vault-rarity: #ffdc84; }
+}
+.points-mall-star-vault--daily {
+  .jn-vault-small-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; margin-top: 4px; }
+  .jn-vault-small-actions button { font-size: 12px; background: transparent; border: 0; padding: 5px 8px; }
+  .jn-vault-rule { color: #c4cfdf; text-align: center; font-size: 11px; margin: 4px 0 10px; }
+  .jn-vault-error { color: #ffd1cb; font-size: 12px; }
+  .jn-vault-pool { font-size: 12px; color: #d7e1f1; border-top: 1px solid #53617d; margin: 0 8px; }
+  .jn-vault-pool summary { display: flex; align-items: center; justify-content: center; }
+  .jn-vault-pool summary::before { content: "＋"; padding-right: 4px; }
+  .jn-vault-pool[open] summary::before { content: "－"; }
+  .jn-vault-pool p { font-size: 12px; line-height: 1.6; }
+  .jn-vault-pool-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; color: var(--vault-rarity); }
+  .jn-vault-pool-item strong { white-space: nowrap; }
+  .jn-vault-history-item { width: 100%; margin: 4px 0; font-size: 12px; text-align: left; }
+}
+dialog.jn-vault-dialog {
+  box-sizing: border-box; width: min(860px, calc(100vw - 24px)); max-width: calc(100vw - 24px); max-height: calc(100dvh - 32px);
+  padding: 24px; margin: auto; border: 1px solid #526078; border-radius: 20px; background: #141d2b; color: #eef3ff; overflow-x: hidden; overflow-y: auto;
+  box-shadow: 0 24px 100px #0009;
+  &::backdrop { background: #080e19c9; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 22px; }
+  h2 { color: #f4f7ff; margin: 6px 0 0; font-size: 28px; }
+  .jn-vault-eyebrow { color: #c4d3e9; font-size: 12px; }
+  .jn-vault-close { width: 44px; flex-shrink: 0; padding: 0; font-size: 26px; }
+  .jn-vault-reel { position: relative; width: 100%; overflow: hidden; border-radius: 12px; border: 1px solid #445570; background: #0b1320; padding: 20px 0; }
+  .jn-vault-reel::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg,#0b1320dd,transparent 17%,transparent 83%,#0b1320dd); }
+  .jn-vault-pointer { position: absolute; z-index: 2; left: 50%; top: 0; bottom: 0; width: 2px; background: #adefdc; transform: translateX(-50%); box-shadow: 0 0 10px #adefdc66; pointer-events: none; }
+  .jn-vault-pointer::before { content: ""; position: absolute; top: 0; left: -7px; width: 16px; height: 12px; background: #adefdc; clip-path: polygon(0 0,100% 0,50% 100%); }
+  .jn-vault-reel-track { display: flex; gap: 10px; width: max-content; will-change: transform; }
+  .jn-vault-prize { box-sizing: border-box; flex: 0 0 148px; width: 148px; height: 204px; padding: 12px 8px; background: linear-gradient(160deg,#2a3650,#182233); border-bottom: 4px solid var(--vault-rarity); text-align: center; }
+  .jn-vault-prize img { display: block; width: 110px; height: 112px; object-fit: contain; margin: 0 auto 8px; }
+  .jn-vault-prize small { display: block; font-size: 11px; color: var(--vault-rarity); }
+  .jn-vault-prize strong { display: block; font-size: 12px; line-height: 1.5; color: #edf3ff; margin-top: 3px; }
+  .jn-vault-wait { padding: 28px 0 18px; text-align: center; color: #c4d3e9; }
+  .jn-vault-skip { display: block; margin: auto; }
+  .jn-vault-result { padding: 24px 8px 12px; text-align: center; }
+  .jn-vault-result small, .jn-vault-result h3 { color: var(--vault-rarity); }
+  .jn-vault-result h3 { font-size: 24px; margin: 8px 0; }
+  .jn-vault-result p { color: #c4d3e9; font-size: 13px; }
+  .jn-vault-result-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .jn-vault-result-actions a { display: inline-flex; align-items: center; padding: 0 12px; color: #adefdc; }
+  .jn-vault-disclaimer { font-size: 12px; color: #b8c6dc; text-align: center; margin: 20px 0 0; }
+}
+@media (max-width: 600px) {
+  dialog.jn-vault-dialog { padding: 16px 12px; border-radius: 16px; }
+  dialog.jn-vault-dialog .jn-vault-prize { width: 116px; flex-basis: 116px; height: 182px; }
+  dialog.jn-vault-dialog .jn-vault-prize img { width: 88px; height: 90px; }
+  dialog.jn-vault-dialog .jn-vault-result h3 { font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .jn-vault-dialog * { animation: none !important; transition: none !important; } }
+
+// The chest and reward rail share one scene, rather than obscuring the chest with a card modal.
+dialog.jn-vault-dialog--scene {
+  --vault-scene-bg: #151f30;
+  width: min(1040px, calc(100vw - 24px));
+  background: var(--vault-scene-bg);
+  header { padding-bottom: 14px; }
+  .jn-vault-scene { position: relative; height: 380px; isolation: isolate; overflow: hidden; border-radius: 14px; background: radial-gradient(ellipse at 50% 35%,#39385f,#222c40 75%); }
+  .jn-vault-scene-backdrop { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .jn-vault-scene-backdrop iframe { position: absolute; left: 50%; top: -70px; transform: translateX(-50%); width: 760px; height: 480px; max-width: none; border: 0; opacity: .8; color-scheme: dark; }
+  .jn-vault-scene-caption { position: absolute; top: 14px; left: 20px; color: #c1cde2; font-size: 10px; letter-spacing: .16em; }
+  .jn-vault-reel { position: absolute; box-sizing: border-box; top: 61%; transform: translateY(-50%); border: 0; border-radius: 0; padding: 20px 0; background: linear-gradient(0deg,#101b3099,#18283d33); }
+  .jn-vault-reel::after { background: linear-gradient(90deg,#222c40,transparent 13%,transparent 87%,#222c40); }
+  .jn-vault-reel-track { gap: 24px; visibility: hidden; }
+  .jn-vault-reel-track[data-ready="true"] { visibility: visible; }
+  .jn-vault-prize { background: linear-gradient(165deg,#26365077,#111d32e8); border-radius: 8px 8px 2px 2px; }
+  &.is-settled .is-winning-slot { box-shadow: inset 0 0 0 1px var(--vault-rarity),0 0 22px #b1deff24; }
+  .jn-vault-sound-controls { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .jn-vault-sound-controls button { background: transparent; border-color: #53617d; font-size: 12px; }
+  .jn-vault-sound-controls small { color: #b9c8de; font-size: 11px; }
+  .jn-vault-wait { padding: 12px 0; }
+  .jn-vault-result { padding: 12px 8px 8px; }
+  .jn-vault-disclaimer { margin-top: 12px; }
+}
+@media (max-width: 600px) {
+  dialog.jn-vault-dialog--scene {
+    .jn-vault-scene { height: 310px; }
+    .jn-vault-scene-backdrop iframe { width: 520px; height: 380px; top: -60px; }
+    .jn-vault-scene-caption { left: 12px; font-size: 9px; }
+    .jn-vault-reel { top: 62%; }
+    .jn-vault-reel-track { gap: 14px; }
+    .jn-vault-sound-controls { gap: 4px; }
+    .jn-vault-sound-controls small { font-size: 10px; }
+  }
+}
+
+dialog.jn-vault-dialog--case {
+  .jn-vault-scene { background: #202933; }
+  .jn-vault-scene-backdrop { z-index: 0; opacity: 1; transition: opacity 300ms ease-out, filter 300ms ease-out; }
+  .jn-vault-scene-backdrop iframe { width: 100%; height: 100%; top: 0; left: 0; transform: none; opacity: 1; }
+  .jn-vault-scene-caption { z-index: 1; }
+  .jn-vault-reel { top: 50%; z-index: 2; opacity: 0; pointer-events: none; background: transparent; transition: opacity 260ms ease-out; }
+  .jn-vault-reel::after { background: linear-gradient(90deg,#202933,transparent 16%,transparent 84%,#202933); }
+  .jn-vault-prize { background: linear-gradient(165deg,#3a4a5d99,#142132c9); }
+  &.phase-rolling, &.phase-settled {
+    .jn-vault-scene-backdrop { filter: blur(2.5px); opacity: .58; }
+    .jn-vault-reel { opacity: 1; }
+  }
+}
+
+@media (max-width: 1100px) {
+  .points-mall-container .shop-promo-banner.shop-promo-banner--star-vault {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 24px 20px 8px;
+    .points-mall-star-vault iframe { height: 280px; }
+  }
+}

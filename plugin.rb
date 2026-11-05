@@ -2,7 +2,7 @@
 
 # name: discourse-points-mall
 # about: A points mall plugin that integrates with discourse-gamification for check-ins and shop
-# version: 0.2.10
+# version: 0.2.14
 # authors: VegaMonika
 # url: https://github.com/VegaMonika/discourse-points-mall
 # required_version: 2.7.0
@@ -10,6 +10,7 @@
 enabled_site_setting :points_mall_enabled
 
 register_asset "stylesheets/common/points-mall.scss"
+register_asset "stylesheets/common/points-mall-star-vault.scss"
 register_asset "stylesheets/mobile/points-mall.scss", :mobile
 
 register_svg_icon "gift"
@@ -82,6 +83,11 @@ after_initialize do
 
   require_relative "app/models/points_mall_product"
   require_relative "app/models/points_mall_order"
+  require_relative "app/models/points_mall_vault_draw"
+  require_relative "lib/discourse_points_mall/star_vault"
+  require_relative "lib/discourse_points_mall/star_vault_delivery"
+  require_relative "jobs/regular/points_mall_vault_delivery"
+  require_relative "jobs/scheduled/points_mall_vault_pending"
   require_relative "app/models/points_mall_checkin"
   require_relative "app/models/points_mall_address"
   require_relative "app/models/points_mall_makeup_card"
@@ -97,11 +103,13 @@ after_initialize do
   require_relative "app/controllers/discourse_points_mall/points_controller"
   require_relative "app/controllers/discourse_points_mall/addresses_controller"
   require_relative "app/controllers/discourse_points_mall/inventory_controller"
+  require_relative "app/controllers/discourse_points_mall/star_vault_controller"
   require_relative "app/controllers/discourse_points_mall/pages_controller"
   require_relative "app/controllers/discourse_points_mall/admin_products_controller"
   require_relative "app/controllers/discourse_points_mall/admin_orders_controller"
   require_relative "app/controllers/discourse_points_mall/admin_checkins_controller"
   require_relative "app/controllers/discourse_points_mall/shouts_controller"
+  require_relative "app/controllers/discourse_points_mall/cosmetics_controller"
 
   add_admin_route(
     "points_mall.admin.title",
@@ -122,6 +130,10 @@ after_initialize do
       post "/shouts" => "shouts#create"
       delete "/shouts/:id" => "shouts#destroy"
       get "/inventory" => "inventory#index"
+      get "/cosmetics/equipped" => "cosmetics#equipped"
+      get "/star-vault" => "star_vault#show"
+      post "/star-vault/open" => "star_vault#create"
+      post "/star-vault/:id/retry" => "star_vault#retry_delivery"
       post "/inventory/equip" => "inventory#equip"
       post "/inventory/unequip" => "inventory#unequip"
       resources :addresses, only: %i[index create update destroy]
@@ -150,7 +162,7 @@ after_initialize do
 
   module ::Jobs
     class PointsMallExpireCosmetics < ::Jobs::Scheduled
-      every 1.day
+      every 1.hour
 
       def execute(_args)
         now = Time.zone.now

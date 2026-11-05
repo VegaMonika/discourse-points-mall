@@ -11,6 +11,9 @@ function usernameFromApi(api) {
 
 let activeFrameState = {};
 let avatarRefreshTimer;
+let cosmeticsPageTimer;
+let cosmeticsRequestState;
+const COSMETICS_REFRESH_INTERVAL = 30_000;
 const AVATAR_IMAGE_SELECTOR = 'img.avatar, img[src*="/user_avatar/"]';
 const AVATAR_FRAME_EXCLUDED_CONTEXT =
   ".modal-container, .d-modal, .dialog-holder, .emoji-picker, .fk-d-menu";
@@ -235,29 +238,60 @@ function watchForNewAvatars() {
   });
 }
 
-async function refreshCurrentUserCosmetics(api) {
+function cosmeticsStateFor(username) {
+  if (cosmeticsRequestState?.username !== username) {
+    cosmeticsRequestState = { username, pending: null, nextRefreshAt: 0, revision: 0 };
+  }
+  return cosmeticsRequestState;
+}
+
+function applyCosmeticsInventory(username, inventory) {
+  const equippedFrame = inventory?.equipped?.avatar_frame;
+  applyAvatarFrame(username, equippedFrame?.value, equippedFrame?.image_url);
+  applyThemeSkin(inventory?.equipped?.theme_skin?.value);
+}
+
+function refreshCurrentUserCosmetics(api) {
   const username = usernameFromApi(api);
+  const state = cosmeticsStateFor(username);
   if (!username) {
     return;
   }
 
-  try {
-    const response = await fetch("/points-mall/inventory", {
-      credentials: "same-origin",
-      headers: { Accept: "application/json" },
-    });
-    if (!response.ok) {
-      return;
-    }
-
-    const payload = await response.json();
-    const equippedFrame = payload?.inventory?.equipped?.avatar_frame;
-    const themeSkin = payload?.inventory?.equipped?.theme_skin?.value;
-    applyAvatarFrame(username, equippedFrame?.value, equippedFrame?.image_url);
-    applyThemeSkin(themeSkin);
-  } catch (_error) {
-    // Cosmetic rendering should never block normal forum navigation.
+  // Initial rendering and route changes can request the same inventory together.
+  // Reuse one request and cool down failed requests as well as successful ones.
+  if (state.pending || Date.now() < state.nextRefreshAt) {
+    return state.pending;
   }
+  state.nextRefreshAt = Date.now() + COSMETICS_REFRESH_INTERVAL;
+  const revision = state.revision;
+  state.pending = (async () => {
+    try {
+      const response = await fetch("/points-mall/inventory", {
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) {
+        return;
+      }
+
+      const payload = await response.json();
+      // A completed equip/unequip or user change is newer than this request.
+      if (
+        state !== cosmeticsRequestState ||
+        revision !== state.revision ||
+        username !== usernameFromApi(api)
+      ) {
+        return;
+      }
+      applyCosmeticsInventory(username, payload?.inventory);
+    } catch (_error) {
+      // Cosmetic rendering should never block normal forum navigation.
+    }
+  })().finally(() => {
+    state.pending = null;
+  });
+  return state.pending;
 }
 
 export default apiInitializer("1.8.0", (api) => {
@@ -272,16 +306,15 @@ export default apiInitializer("1.8.0", (api) => {
   window.addEventListener("resize", positionImageAvatarFrames);
   refreshCurrentUserCosmetics(api);
   window.addEventListener("jn:cosmetics-updated", (event) => {
+    const username = usernameFromApi(api);
+    const state = cosmeticsStateFor(username);
+    state.revision += 1;
+    state.nextRefreshAt = Date.now() + COSMETICS_REFRESH_INTERVAL;
     const inventory = event?.detail?.inventory || {};
-    const equippedFrame = inventory?.equipped?.avatar_frame;
-    applyAvatarFrame(
-      usernameFromApi(api),
-      equippedFrame?.value,
-      equippedFrame?.image_url
-    );
-    applyThemeSkin(inventory?.equipped?.theme_skin?.value);
+    applyCosmeticsInventory(username, inventory);
   });
   api.onPageChange(() => {
-    window.setTimeout(() => refreshCurrentUserCosmetics(api), 150);
+    window.clearTimeout(cosmeticsPageTimer);
+    cosmeticsPageTimer = window.setTimeout(() => refreshCurrentUserCosmetics(api), 150);
   });
 });
